@@ -2,7 +2,7 @@
 	"name"				: "robot-js",
 	"version"			: "1.0.2",
 	"license"			: "Zlib",
-	"main"				: "Library/Robot.js",
+	"main"				: "lib/Robot.js",
 
 	"description"		: "Native system automation for node.js",
 	"homepage"			: "http://getrobot.net",
@@ -60,6 +60,7 @@
 
 	"devDependencies":
 	{
+		"node-gyp"		: "^3",
 		"sprintf-js"	: "^1",
 		"node-png"		: "^0",
 		"readline-sync"	: "^1"
@@ -67,7 +68,7 @@
 
 	"scripts":
 	{
-		"install"		: "node Native/Install.js || node-gyp rebuild"
+		"install"		: "node install.js || node-gyp rebuild",
 	},
 
 	"engines":
