@@ -103,7 +103,7 @@ function main (argc, argv)
 			log ("ver " + ver + " x64 - WIN");
 	}
 
-	log (mRobot.Process.isSys64Bit() ? " 64\n" : " 32\n");
+	log (mRobot.Process.isSys64Bit() ? " 64" : " 32");
 
 	log ("------------------------------\n"  );
 	log ("(C) 2010-2017 Robot Developers\n\n");
@@ -127,6 +127,7 @@ function main (argc, argv)
 		return 1;
 	}
 
+	var _nowait    = false;
 	var _types     = false;
 	var _timer     = false;
 	var _keyboard  = false;
@@ -155,6 +156,7 @@ function main (argc, argv)
 			break;
 		}
 
+		if (argv[i] === "nowait"   ) _nowait    = true; else
 		if (argv[i] === "types"    ) _types     = true; else
 		if (argv[i] === "timer"    ) _timer     = true; else
 		if (argv[i] === "keyboard" ) _keyboard  = true; else
@@ -181,9 +183,11 @@ function main (argc, argv)
 		res = 0;
 	}
 
-	// All the tests have concluded
-	log ("Press enter to exit\n");
-	getline();
+	if (!_nowait) {
+		// All the tests have concluded
+		log ("Press enter to exit\n");
+		getline();
+	}
 	return res;
 }
 

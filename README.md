@@ -25,6 +25,15 @@
 	</a>
 </p>
 
+<p align="center">
+	<a target="_blank" href="https://travis-ci.org/p120ph37/robot-js">
+		<img src="https://img.shields.io/travis/p120ph37/robot-js.svg?style=flat-square&label=Travis+CI" alt="Travis CI Build Status" />
+	</a>
+	<a target="_blank" href="https://ci.appveyor.com/project/p120ph37/robot-js">
+		<img src="https://img.shields.io/appveyor/ci/p120ph37/robot-js.svg?style=flat-square&label=AppVeyor"  alt="AppVeyor Build Status" />
+	</a>
+</p>
+
 <h5 align="center">
 	<a target="_blank" href="http://getrobot.net/docs/node.html">
 		GET STARTED

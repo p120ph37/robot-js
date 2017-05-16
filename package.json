@@ -69,6 +69,8 @@
 	"scripts":
 	{
 		"install"		: "node install.js || node-gyp rebuild",
+		"test"			: "node test/Test.js nowait types",
+		"electron_test"	: "electron test/Electron.js nowait types"
 	},
 
 	"engines":
