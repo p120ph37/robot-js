@@ -72,6 +72,8 @@ var testClipboard = require ("./Clipboard")(mRobot, log, mSprintf, getline, asse
 function main (argc, argv)
 {
 	log ("\nROBOT TESTING SUITE\n");
+	log("Node: " + process.versions.node + "\n");
+	log("Module: " + process.platform + "-" + process.arch + "-" + process.versions.modules + "\n");
 
 	var ver = mRobot.ADDON_VERSION_STR;
 	if (process.platform === "linux")
@@ -103,7 +105,7 @@ function main (argc, argv)
 			log ("ver " + ver + " x64 - WIN");
 	}
 
-	log (mRobot.Process.isSys64Bit() ? " 64" : " 32");
+	log (mRobot.Process.isSys64Bit() ? " 64\n" : " 32\n");
 
 	log ("------------------------------\n"  );
 	log ("(C) 2010-2017 Robot Developers\n\n");
