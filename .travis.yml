@@ -1,0 +1,66 @@
+language: cpp
+sudo: false
+env:
+  global: NVM_PRE="7.7.4 6.10.3 5.12.0 4.8.3 0.12.17"
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      env: NVM_OS=linux NVM_ARCH=x64
+      addons:
+        apt:
+          packages:
+            # for robot to build
+            - libxinerama-dev
+            - libxtst-dev
+            # for electron to run
+            - libgtk2.0-0
+            - libx11-xcb1
+            - libxss1
+            - libudev1
+            - libgconf-2-4
+            - libnss3
+            - libasound2
+    - os: linux
+      dist: trusty
+      env: NVM_OS=linux NVM_ARCH=x86
+      addons:
+        apt:
+          packages:
+            # for robot to build
+            - g++-multilib
+            - libxinerama-dev:i386
+            - libxtst-dev:i386
+            # for electron to run
+            - libgtk2.0-0:i386
+            - libx11-xcb1:i386
+            - libxss1:i386
+            - libudev1:i386
+            - libgconf-2-4:i386
+            - libnss3:i386
+            - libasound2:i386
+    - os: osx
+      env: NVM_OS=darwin NVM_ARCH=x64
+cache:
+  directories:
+    - node_versions
+install:
+  - | # Replace nvm with a fresh copy and pre-load with arch-specific binaries
+    rm -rf $HOME/.npm; mkdir -p $HOME/.npm
+    curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm.sh -o $HOME/.npm/nvm.sh
+    curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm-exec -o $HOME/.npm/nvm-exec
+    chmod 755 $HOME/.npm/nvm-exec
+    mkdir -p $HOME/.nvm/versions; ln -s $HOME/node_versions $HOME/.nvm/versions/node
+    for ver in $NVM_PRE; do
+      dir=$HOME/.nvm/versions/node/v$ver
+      [ -e $dir ] || mkdir -p $dir \
+        && curl -s https://nodejs.org/dist/v$ver/node-v$ver-$NVM_OS-$NVM_ARCH.tar.gz \
+        | tar -xzC$dir --strip-components=1
+    done
+  - nvm ls
+  - nvm use 7.7.4 # start using one of the arch-specific versions
+  - npm install -g node-gyp npm-add-script
+  - npmAddScript -f -k install -v "" # Disable the normal install script of this module
+  - npm install # Install just dependencies
+script:
+  - node build_matrix.js

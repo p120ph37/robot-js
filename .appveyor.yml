@@ -1,39 +1,16 @@
-version: build-{build}
-pull_requests:
-  do_not_increment_build_number: true
 os: Visual Studio 2015
 platform:
   - x64
   - x86
-environment:
-  electron_url: 'https://atom.io/download/electron'
-  matrix:
-#   - { abi: 57, node: 8.0.0                     }
-#   - { abi: 56,                electron: 1.9.0  }
-#   - { abi: 55,                electron: 1.8.0  }
-#   - { abi: 54,                electron: 1.7.0  }
-    - { abi: 53,                electron: 1.6.9  }
-    - { abi: 51, node: 7.7.4                     } # electron 1.5.x was beta and never fully released
-    - { abi: 50,                electron: 1.4.16 }
-    - { abi: 49,                electron: 1.3.15 }
-# electron 1.2.x incorrectly claims to be node-abi-48, but isn't
-#  see: https://github.com/electron/electron/issues/5851
-    - { abi: 48, node: 6.10.3                    }
-    - { abi: 47, node: 5.12.0                    }
-    - { abi: 46, node: 4.8.3                     }
-    - { abi: 14, node: 0.12.17                   }
 install:
-  - ps: Install-Product node "$env:node" $env:platform
+  - ps: Install-Product node "" $env:platform # install deps under latest runtime (source-only deps will switch cleanly for tests)
   - npm install -g node-gyp npm-add-script
   - npmAddScript -f -k install -v "" # Disable the normal install script of this module
   - npm install # Install just dependencies
 build_script:
-  # prefer to build with node (might matter if electron ever legitimately overlaps ABI)
-  - if "%node%" neq "" (node-gyp rebuild) else (node-gyp rebuild --dist-url=%electron_url% --target=%electron%)
+  - node build_matrix.js
 artifacts:
   - path: 'lib\*.node'
-test_script:
-  - if "%node%"     neq "" (npm run test)
-  - if "%electron%" neq "" (npm install electron%suff%@%electron% && npm run electron_test)
+test: OFF
 deploy_script:
   - ps: if($env:APPVEYOR_REPO_COMMIT_MESSAGE.ToLower().Contains('[publish binary]')) { ./node_modules/.bin/node-pre-gyp publish }
