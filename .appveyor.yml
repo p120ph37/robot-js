@@ -1,16 +1,16 @@
 os: Visual Studio 2015
 platform:
-  - x64
-  - x86
+	- x64
+	- x86
 install:
-  - ps: Install-Product node "" $env:platform # install deps under latest runtime (source-only deps will switch cleanly for tests)
-  - npm install -g node-gyp npm-add-script
-  - npmAddScript -f -k install -v "" # Disable the normal install script of this module
-  - npm install # Install just dependencies
+	- ps: Install-Product node "" $env:platform # install deps under latest runtime (source-only deps will switch cleanly for tests)
+	- npm install -g node-gyp npm-add-script
+	- npmAddScript -f -k install -v "" # Disable the normal install script of this module
+	- npm install # Install just dependencies
 build_script:
-  - node build_matrix.js
+	- node build_matrix.js
 artifacts:
-  - path: 'lib\*.node'
+	- path: 'lib\*.node'
 test: OFF
 deploy_script:
-  - ps: if($env:APPVEYOR_REPO_COMMIT_MESSAGE.ToLower().Contains('[publish binary]')) { ./node_modules/.bin/node-pre-gyp publish }
+	- ps: if($env:APPVEYOR_REPO_COMMIT_MESSAGE.ToLower().Contains('[publish binary]')) { ./node_modules/.bin/node-pre-gyp publish }
