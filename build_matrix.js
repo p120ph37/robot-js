@@ -84,4 +84,4 @@ for(var v of ['1.6.9', '1.4.16', '1.3.15']) {
 	);
 }
 
-run(path.join('node_modules', '.bin', 'node-pre-gyp'), 'publish');
+run(path.join('node_modules', '.bin', 'node-pre-gyp-github'), 'publish');
