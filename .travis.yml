@@ -63,7 +63,9 @@ script:
 deploy:
   provider: releases
   skip_cleanup: true
-  release-number: 1.0.3
+  tag_name: 1.0.3
+  name: 1.0.3
+  target_commitish: node-pre-gyp
   api_key:
     secure: "Fu+1ozrzYxdU4DNjXR8x/7RSZnbJiNqItFIYCK0uBwfKfFOtAsCUbL4M8KXtbUL43f+N9OsRSOHoRDUoNJuTSa+ACQCcMgaWZFWpB9IerimBrfHgP/Bge8OxiB3b3L43PppWgvwIeywOIj8WZoVuVAGNnDreWT/8N3bqPamNvHWtWbWUFcA+zjgkRbuCAiuYzGwhnZ97sd/D7jMcYX9nA74hkF+gt4x8cHgBAYu/VrtCX9akArJG+8zlRROBK49fPx9hwe5y6X9TOIz9bFXqoJS2z9LoZLgXhNtg+LLw6uQ8akFDFA05I094wtnwrY4Ihz4S8FFYSE8/B4W/V5ZdWqgdHy4tqU2ZfWiRjtGL0P8vZlIJ/yIKGY7D91TwcZAh3n09hTUMYi/weCB6Xbma69OMh01QDjvSorBlAImEFNPymER4JYqGhBmF9gHlOm1kgRp4DRrMiuSfIdM9aTvThY915D62NKRCrZ4MiMyfS6d1POBsz/TWvJW8OIhIDQrVbjmmV9Wr8r9TkMLOTucrHVuK+ZcH1NETiBaMbXZ4+0Y8DHxMFG1kkS6u52d08XXftmG27Ui9yKoGmezPWhlpOLIWTthI0C7MWHYbpYKIhf70A/cJ96DcXT8XQgebrGH/fFMgT6Jb6kSXoSbo8L2+dyINdu6YjvG84AmOD8osffs="
   file_glob: true
