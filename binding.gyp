@@ -1,11 +1,6 @@
 {
-  "conditions": [
-    ["OS=='linux'", {"variables": {"target_platform": "linux"}}],
-    ["OS=='win'", {"variables": {"target_platform": "win32"}}],
-    ["OS=='mac'", {"variables": {"target_platform": "darwin"}}],
-  ],
   "variables": {
-    "target_module_version": "<!(node <(module_root_dir)/abi.js <(node_root_dir))",
+    "module_name%": "robot",
   },
   "target_defaults": {
     "conditions": [
@@ -109,7 +104,7 @@
       ],
     },
     {
-      "target_name": "<(target_platform)-<(target_arch)-<(target_module_version)",
+      "target_name": "<(module_name)",
       "dependencies": ["librobot"],
       "configurations": {
         "Debug": {
@@ -172,11 +167,11 @@
     {
       "target_name": "copy_binary",
       "type": "none",
-      "dependencies": ["<(target_platform)-<(target_arch)-<(target_module_version)"],
+      "dependencies": ["<(module_name)"],
       "copies": [
         {
-          "files": ["<(PRODUCT_DIR)/<@(_dependencies).node"],
-          "destination": "<(module_root_dir)/lib",
+          "files": ["<(PRODUCT_DIR)/<(module_name).node"],
+          "destination": "<(module_path)",
         },
       ],
     },

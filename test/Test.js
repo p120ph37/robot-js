@@ -73,7 +73,10 @@ function main (argc, argv)
 {
 	log ("\nROBOT TESTING SUITE\n");
 	log("Node: " + process.versions.node + "\n");
-	log("Module: " + process.platform + "-" + process.arch + "-" + process.versions.modules + "\n");
+	var binary = require ('node-pre-gyp');
+	var path = require ('path');
+	var binding_path = binary.find (path.resolve (path.join (__dirname, '..', 'package.json')));
+	log("Module: " + binding_path + "\n");
 
 	var ver = mRobot.ADDON_VERSION_STR;
 	if (process.platform === "linux")

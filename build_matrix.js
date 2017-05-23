@@ -48,7 +48,6 @@ function run_with(v) {
 	}
 }
 
-var electron_url = 'https://atom.io/download/electron';
 var matrix = [
 //	{ abi: 57, node: '8.0.0'					  },
 //	{ abi: 56,					electron: '1.9.0' },
@@ -68,26 +67,14 @@ var matrix = [
 ];
 
 for(var i = 0; i < matrix.length; i++) {
-	var name = process.platform + '-' + process.arch + '-' + matrix[i].abi + '.node';
-	var fullname = path.join(__dirname, 'lib', name);
-	log('Building ' + name);
-	// Clear previous binary if present
-	fs.existsSync(fullname) && fs.unlinkSync(fullname);
 	// prefer to build using node headers (even if electron shares this ABI)
-	if(matrix[i].node) {
-		log('Compiling against node=' + matrix[i].node);
-		run('node-gyp', 'rebuild', '--target=' + matrix[i].node);
-	} else {
-		log('Compiling against electron=' + matrix[i].electron);
-		run('node-gyp', 'rebuild', '--target=' + matrix[i].electron, '--dist-url=' + electron_url);
-	}
-	// check that the expected binary was produced
-	var size = fs.existsSync(fullname) ? fs.statSync(fullname).size : 0;
-	if(size > 0) {
-		log('Produced: ' + name + ' - Size: ' + size);
-	} else {
-		die('Expected artifact "' + fullname + '" not found!');
-	}
+	var build_runtime = matrix[i].node ? 'node' : 'electron';
+	log('Compiling against ' + build_runtime + '=' + matrix[i][build_runtime]);
+	run(
+	  './node_modules/.bin/node-pre-gyp', 'rebuild',
+	  '--runtime=' + build_runtime,
+	  '--target=' + matrix[i][build_runtime]
+	);
 	// run tests
 	if(matrix[i].node) {
 		log('Testing against node=' + matrix[i].node);
@@ -105,4 +92,15 @@ for(var i = 0; i < matrix.length; i++) {
 		log('Test completed against electron=' + matrix[i].electron);
 	}
 	log('All tests completed!');
+	log('Publishing...');
+	run(
+	  './node_modules/.bin/node-pre-gyp', 'package',
+	  '--runtime=' + build_runtime,
+	  '--target=' + matrix[i][build_runtime]
+	);
+	run(
+	  './node_modules/.bin/node-pre-gyp-github', 'publish',
+	  '--runtime=' + build_runtime,
+	  '--target=' + matrix[i][build_runtime]
+	);
 }
