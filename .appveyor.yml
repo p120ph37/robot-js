@@ -8,8 +8,16 @@ install:
   - npmAddScript -f -k install -v "" # Disable the normal install script of this module
   - npm install # Install just dependencies
 build_script:
+  - .\node_modules\.bin\node-pre-gyp clean # make sure we start clean
   - node build_matrix.js
 artifacts:
-  - path: 'build\stage\**\*.tar.gz'
+  - path: 'build\stage\*\*.tar.gz'
 test: OFF
-deploy: OFF
+deploy:
+  description: $(APPVEYOR_REPO_TAG_NAME)
+  provider: GitHub
+  auth_token:
+    secure: gkLVM16ULpFG6pKrcHVJfkyrl+ZBUJFZUto6lBuTd7FkyUlOyHE6KilyIWzsseNc
+  artifact: /.*/
+  on:
+    appveyor_repo_tag: true

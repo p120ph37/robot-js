@@ -48,8 +48,6 @@ function run_with(v) {
 	}
 }
 
-run(path.join('node_modules', '.bin', 'node-pre-gyp'), 'clean');
-
 for(var v of ['7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17']) {
 	log('Compiling, testing, packaging, and publishing for node v' + v);
 	run(
@@ -63,8 +61,6 @@ for(var v of ['7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17']) {
 	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'package',
 	  '--runtime=node', '--target=' + v
 	);
-	// publish
-	run(path.join('node_modules', '.bin', 'node-pre-gyp-github'), 'publish');
 }
 
 for(var v of ['1.6.9', '1.4.16', '1.3.15']) {
@@ -86,7 +82,4 @@ for(var v of ['1.6.9', '1.4.16', '1.3.15']) {
 	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'package',
 	  '--runtime=electron', '--target=' + v
 	);
-	// publish
-	run(path.join('node_modules', '.bin', 'node-pre-gyp-github'), 'publish');
 }
-
