@@ -48,6 +48,7 @@ function run_with(v) {
 	}
 }
 
+var electron_url = 'https://atom.io/download/electron';
 var matrix = [
 //	{ abi: 57, node: '8.0.0'					  },
 //	{ abi: 56,					electron: '1.9.0' },
@@ -73,7 +74,12 @@ for(var i = 0; i < matrix.length; i++) {
 	run(
 	  './node_modules/.bin/node-pre-gyp', 'rebuild',
 	  '--runtime=' + build_runtime,
-	  '--target=' + matrix[i][build_runtime]
+	  '--target=' + matrix[i][build_runtime],
+	  '--dist-url=' + (
+	    build_runtime === 'node' ?
+	      'https://nodejs.org/dist' :
+	      'https://atom.io/download/electron'
+	    )
 	);
 	// run tests
 	if(matrix[i].node) {
