@@ -14,10 +14,13 @@ artifacts:
   - path: 'build\stage\*\*.tar.gz'
 test: OFF
 deploy:
-  description: $(APPVEYOR_REPO_TAG_NAME)
+  tag: 1.0.3
+  description: $(APPVEYOR_PROJECT_NAME) $(APPVEYOR_REPO_TAG_NAME)
   provider: GitHub
   auth_token:
     secure: gkLVM16ULpFG6pKrcHVJfkyrl+ZBUJFZUto6lBuTd7FkyUlOyHE6KilyIWzsseNc
   artifact: /.*/
+  draft: true
+  overwrite: true
   on:
-    appveyor_repo_tag: true
+    branch: prebuilt
