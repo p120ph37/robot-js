@@ -48,10 +48,11 @@ install:
   - | # Replace nvm with a fresh copy and pre-load with arch-specific binaries
     mkdir -p $HOME/node_versions
     rm -rf $HOME/.nvm; mkdir $HOME/.nvm
-    mkdir $HOME/.nvm/versions; ln -s $HOME/node_versions $HOME/.nvm/versions/node
     curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm.sh -o $HOME/.nvm/nvm.sh
     curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm-exec -o $HOME/.nvm/nvm-exec
     chmod 755 $HOME/.nvm/nvm-exec
+    mkdir $HOME/.nvm/versions
+    mv $HOME/node_versions $HOME/.nvm/versions/node
     for ver in $NVM_PRE; do
       dir=$HOME/.nvm/versions/node/v$ver
       if [ ! -e $dir ]; then
@@ -67,3 +68,5 @@ install:
   - npm install # Install just dependencies
 script:
   - node build_matrix.js
+before_cache:
+  - mv $HOME/.nvm/versions/node $HOME/node_versions
