@@ -104,9 +104,6 @@ for(var i = 0; i < matrix.length; i++) {
 	  '--runtime=' + build_runtime,
 	  '--target=' + matrix[i][build_runtime]
 	);
-	run(
-	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'publish',
-	  '--runtime=' + build_runtime,
-	  '--target=' + matrix[i][build_runtime]
-	);
 }
+
+run(path.join('node_modules', '.bin', 'node-pre-gyp'), 'publish');

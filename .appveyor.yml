@@ -10,7 +10,6 @@ install:
 build_script:
   - node build_matrix.js
 artifacts:
-  - path: 'lib\*.node'
+  - path: 'build\stage\**\*.tar.gz'
 test: OFF
-deploy_script:
-  - ps: if($env:APPVEYOR_REPO_COMMIT_MESSAGE.ToLower().Contains('[publish binary]')) { ./node_modules/.bin/node-pre-gyp publish }
+deploy: OFF
