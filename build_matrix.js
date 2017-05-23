@@ -55,7 +55,7 @@ var matrix = [
 //	{ abi: 55,					electron: '1.8.0' },
 //	{ abi: 54,					electron: '1.7.0' },
 	{ abi: 53,					electron: '1.6.9' },
-	{ abi: 51, node: '7.7.4'					  },
+	{ abi: 51, node: '7.7.3'					  },
 	// electron 1.5.x was beta and never fully released
 	{ abi: 50,					electron: '1.4.16'},
 	{ abi: 49,					electron: '1.3.15'},
