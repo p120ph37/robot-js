@@ -41,15 +41,9 @@ matrix:
             - libasound2:i386
     - os: osx
       env: NVM_OS=darwin NVM_ARCH=x64
-cache:
-  directories:
-    - node_versions
 install:
   - | # Replace nvm with a fresh copy and pre-load with arch-specific binaries
-    mkdir -p $HOME/node_versions
     rm -rf $HOME/.nvm
-    mkdir -p $HOME/.nvm/versions
-    mv $HOME/node_versions $HOME/.nvm/versions/node
     curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm.sh -o $HOME/.nvm/nvm.sh
     curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm-exec -o $HOME/.nvm/nvm-exec
     chmod 755 $HOME/.nvm/nvm-exec
@@ -69,8 +63,6 @@ install:
 script:
   - ./node_modules/.bin/node-pre-gyp clean # make sure we start clean
   - node build_matrix.js
-before_cache:
-  - mv $HOME/.nvm/versions/node $HOME/node_versions
 deploy:
   provider: releases
   skip_cleanup: true
@@ -82,4 +74,4 @@ deploy:
   draft: true
   overwrite: true
   on:
-    branches: prebuilt
+    branches: node-pre-gyp

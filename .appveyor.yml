@@ -23,4 +23,4 @@ deploy:
   draft: true
   overwrite: true
   on:
-    branch: prebuilt
+    branch: node-pre-gyp
