@@ -48,7 +48,6 @@ function run_with(v) {
 	}
 }
 
-var electron_url = 'https://atom.io/download/electron';
 var matrix = [
 //	{ abi: 57, node: '8.0.0'					  },
 //	{ abi: 56,					electron: '1.9.0' },

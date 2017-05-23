@@ -46,11 +46,13 @@ cache:
     - node_versions
 install:
   - | # Replace nvm with a fresh copy and pre-load with arch-specific binaries
-    rm -rf $HOME/.nvm; mkdir -p $HOME/.nvm
-    curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm.sh -o $HOME/.npm/nvm.sh
-    curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm-exec -o $HOME/.npm/nvm-exec
-    chmod 755 $HOME/.npm/nvm-exec
-    mkdir -p $HOME/.nvm/versions; ln -s $HOME/node_versions $HOME/.nvm/versions/node
+    rm -rf $HOME/.nvm
+    mkdir $HOME/.nvm
+    curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm.sh -o $HOME/.nvm/nvm.sh
+    curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm-exec -o $HOME/.nvm/nvm-exec
+    chmod 755 $HOME/.nvm/nvm-exec
+    mkdir $HOME/.nvm/versions
+    ln -s $HOME/node_versions $HOME/.nvm/versions/node
     for ver in $NVM_PRE; do
       dir=$HOME/.nvm/versions/node/v$ver
       [ -e $dir ] || mkdir -p $dir \
