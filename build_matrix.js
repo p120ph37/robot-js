@@ -72,7 +72,7 @@ for(var i = 0; i < matrix.length; i++) {
 	var build_runtime = matrix[i].node ? 'node' : 'electron';
 	log('Compiling against ' + build_runtime + '=' + matrix[i][build_runtime]);
 	run(
-	  './node_modules/.bin/node-pre-gyp', 'rebuild',
+	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'rebuild',
 	  '--runtime=' + build_runtime,
 	  '--target=' + matrix[i][build_runtime],
 	  '--dist-url=' + (
@@ -100,12 +100,12 @@ for(var i = 0; i < matrix.length; i++) {
 	log('All tests completed!');
 	log('Publishing...');
 	run(
-	  './node_modules/.bin/node-pre-gyp', 'package',
+	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'package',
 	  '--runtime=' + build_runtime,
 	  '--target=' + matrix[i][build_runtime]
 	);
 	run(
-	  './node_modules/.bin/node-pre-gyp-github', 'publish',
+	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'publish',
 	  '--runtime=' + build_runtime,
 	  '--target=' + matrix[i][build_runtime]
 	);
