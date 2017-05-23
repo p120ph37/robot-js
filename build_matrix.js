@@ -82,6 +82,7 @@ for(var v of ['1.6.9', '1.4.16', '1.3.15']) {
 	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'package',
 	  '--runtime=electron', '--target=' + v
 	);
+	// publish
+	run(path.join('node_modules', '.bin', 'node-pre-gyp-github'), 'publish');
 }
 
-run(path.join('node_modules', '.bin', 'node-pre-gyp-github'), 'publish');
