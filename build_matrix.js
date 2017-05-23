@@ -48,10 +48,12 @@ function run_with(v) {
 	}
 }
 
+run(path.join('node_modules', '.bin', 'node-pre-gyp'), 'clean');
+
 for(var v of ['7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17']) {
 	log('Compiling, testing, packaging, and publishing for node v' + v);
 	run(
-	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'rebuild',
+	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'configure', 'build',
 	  '--runtime=node', '--target=' + v
 	);
 	// run tests
@@ -68,7 +70,7 @@ for(var v of ['7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17']) {
 for(var v of ['1.6.9', '1.4.16', '1.3.15']) {
 	log('Compiling, testing, packaging, and publishing for electron v' + v);
 	run(
-	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'rebuild',
+	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'configure', 'build',
 	  '--runtime=electron', '--target=' + v,
 	  '--dist-url=https://atom.io/download/electron'
 	);
