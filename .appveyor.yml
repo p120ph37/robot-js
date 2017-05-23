@@ -4,7 +4,7 @@ platform:
   - x86
 install:
   - ps: Install-Product node "" $env:platform # install deps under latest runtime (source-only deps will switch cleanly for tests)
-  - npm install -g node-gyp npm-add-script
+  - npm install -g npm-add-script
   - npmAddScript -f -k install -v "" # Disable the normal install script of this module
   - npm install # Install just dependencies
 build_script:
