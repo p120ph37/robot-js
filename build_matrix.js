@@ -48,60 +48,39 @@ function run_with(v) {
 	}
 }
 
-var matrix = [
-//	{ abi: 57, node: '8.0.0'					  },
-//	{ abi: 56,					electron: '1.9.0' },
-//	{ abi: 55,					electron: '1.8.0' },
-//	{ abi: 54,					electron: '1.7.0' },
-	{ abi: 53,					electron: '1.6.9' },
-	{ abi: 51, node: '7.7.3'					  },
-	// electron 1.5.x was beta and never fully released
-	{ abi: 50,					electron: '1.4.16'},
-	{ abi: 49,					electron: '1.3.15'},
-	// electron 1.2.x incorrectly claims to be node-abi-48, but isn't
-	// see: https://github.com/electron/electron/issues/5851
-	{ abi: 48, node: '6.10.3'					  },
-	{ abi: 47, node: '5.12.0'					  },
-	{ abi: 46, node: '4.8.3'					  },
-	{ abi: 14, node: '0.12.17'					  },
-];
-
-for(var i = 0; i < matrix.length; i++) {
-	// prefer to build using node headers (even if electron shares this ABI)
-	var build_runtime = matrix[i].node ? 'node' : 'electron';
-	log('Compiling against ' + build_runtime + '=' + matrix[i][build_runtime]);
+for(v of ['7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17']) {
+	log('Compiling, testing, and packaging for node v' + v);
 	run(
 	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'rebuild',
-	  '--runtime=' + build_runtime,
-	  '--target=' + matrix[i][build_runtime],
-	  '--dist-url=' + (
-	    build_runtime === 'node' ?
-	      'https://nodejs.org/dist' :
-	      'https://atom.io/download/electron'
-	    )
+	  '--runtime=node', '--target=' + v
 	);
 	// run tests
-	if(matrix[i].node) {
-		log('Testing against node=' + matrix[i].node);
-		run_with(matrix[i].node,'npm', 'run', 'test');
-		log('Test completed against node=' + matrix[i].node);
-	}
-	if(matrix[i].electron) {
-		log('Testing against electron=' + matrix[i].electron);
-		run('npm', 'install', '-g', 'electron@' + matrix[i].electron);
-		if(process.platform === 'linux') {
-			run('xvfb-run', 'npm', 'run', 'electron_test');
-		} else {
-			run('npm', 'run', 'electron_test');
-		}
-		log('Test completed against electron=' + matrix[i].electron);
-	}
-	log('All tests completed!');
-	log('Publishing...');
+	run_with(v, 'npm', 'run', 'test');
+	// package
 	run(
 	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'package',
-	  '--runtime=' + build_runtime,
-	  '--target=' + matrix[i][build_runtime]
+	  '--runtime=node', '--target=' + v
+	);
+}
+
+for(v of ['1.6.9', '1.4.16', '1.3.15']) {
+	log('Compiling, testing, and packaging for electron v' + v);
+	run(
+	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'rebuild',
+	  '--runtime=electron', '--target=' + v,
+	  '--dist-url=https://atom.io/download/electron'
+	);
+	// run tests
+	run('npm', 'install', '-g', 'electron@' + v);
+	if(process.platform === 'linux') {
+		run('xvfb-run', 'npm', 'run', 'electron_test');
+	} else {
+		run('npm', 'run', 'electron_test');
+	}
+	// package
+	run(
+	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'package',
+	  '--runtime=electron', '--target=' + v
 	);
 }
 
