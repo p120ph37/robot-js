@@ -54,9 +54,11 @@ install:
     chmod 755 $HOME/.nvm/nvm-exec
     for ver in $NVM_PRE; do
       dir=$HOME/.nvm/versions/node/v$ver
-      [ -e $dir ] || echo "Downloading node-$ver" && mkdir -p $dir \
-        && curl -s https://nodejs.org/dist/v$ver/node-v$ver-$NVM_OS-$NVM_ARCH.tar.gz \
-        | tar -xzC$dir --strip-components=1
+      if [ ! -e $dir ] do;
+        mkdir -p $dir
+        curl -s https://nodejs.org/dist/v$ver/node-v$ver-$NVM_OS-$NVM_ARCH.tar.gz \
+          | tar -xzC$dir --strip-components=1
+      done
     done
   - nvm ls
   - nvm use 7.7.3 # start using one of the arch-specific versions
