@@ -64,7 +64,6 @@ script:
 deploy:
   provider: releases
   skip_cleanup: true
-  release_number: tags/untagged-7a2f83055890b7776ed2
   tag_name: $SEMVER
   name: $SEMVER
   target_commitish: $TRAVIS_COMMIT
