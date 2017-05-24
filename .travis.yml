@@ -78,5 +78,5 @@ deploy:
   draft: false
   prerelease: true
   overwrite: true
-  on: node-pre-gyp
+  on: prebuilt
   skip_cleanup: true

@@ -28,4 +28,4 @@ deploy:
   force_update: true
   prerelease: true
   on:
-    branch: node-pre-gyp
+    branch: prebuilt
