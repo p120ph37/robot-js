@@ -63,7 +63,7 @@ script:
 before_deploy:
   - export PKG_NAME=`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).name)"`
   - export PKG_VER=`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).version)"`
-  - export TRAVIS_TAG=$NPM_VER # feed a hypothetical tag to the github releases module
+  - export TRAVIS_TAG=$PKG_VER # feed a hypothetical tag to the github releases module
 deploy:
   provider: releases
   tag_name: $TRAVIS_TAG
