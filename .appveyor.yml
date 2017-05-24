@@ -10,13 +10,14 @@ install:
 build_script:
   - .\node_modules\.bin\node-pre-gyp clean # make sure we start clean
   - node build_matrix.js
+  - for /f "usebackq" %v in (`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).version)"`) do set SEMVER=%v # make the semver available for the deploy step
 artifacts:
   - path: 'build\stage\*\*.tar.gz'
 test: OFF
 deploy:
-  tag: 1.0.3
-  description: $(APPVEYOR_PROJECT_NAME) $(APPVEYOR_REPO_TAG_NAME)
   provider: GitHub
+  tag: $(SEMVER)
+  description: $(APPVEYOR_PROJECT_NAME) $(SEMVER)
   auth_token:
     secure: gkLVM16ULpFG6pKrcHVJfkyrl+ZBUJFZUto6lBuTd7FkyUlOyHE6KilyIWzsseNc
   artifact: /.*/

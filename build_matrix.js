@@ -48,7 +48,8 @@ function run_with(v) {
 	}
 }
 
-for(var v of ['7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17']) {
+var node_ver = ['7.7.3']; //, '6.10.0', '5.12.0', '4.8.0', '0.12.17'];
+for(var v of node_ver) {
 	log('Compiling, testing, packaging, and publishing for node v' + v);
 	run(
 	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'configure', 'build',
@@ -63,7 +64,8 @@ for(var v of ['7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17']) {
 	);
 }
 
-for(var v of ['1.6.9', '1.4.16', '1.3.15']) {
+var electron_ver = ['1.6.9']; //, '1.4.16', '1.3.15'];
+for(var v of electron_ver) {
 	log('Compiling, testing, packaging, and publishing for electron v' + v);
 	run(
 	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'configure', 'build',
