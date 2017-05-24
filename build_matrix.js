@@ -48,7 +48,7 @@ function run_with(v) {
 	}
 }
 
-var node_ver = ['7.7.3']; //, '6.10.0', '5.12.0', '4.8.0', '0.12.17'];
+var node_ver = ['7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17'];
 for(var v of node_ver) {
 	log('Compiling, testing, packaging, and publishing for node v' + v);
 	run(
@@ -64,7 +64,7 @@ for(var v of node_ver) {
 	);
 }
 
-var electron_ver = ['1.6.9']; //, '1.4.16', '1.3.15'];
+var electron_ver = ['1.7.1', '1.6.8', '1.5.1', '1.4.16', '1.3.15', '1.2.8', '1.1.3', '1.0.2'];
 for(var v of electron_ver) {
 	log('Compiling, testing, packaging, and publishing for electron v' + v);
 	run(
