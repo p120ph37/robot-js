@@ -1,16 +1,31 @@
+skip_tags: true
 os: Visual Studio 2015
 platform:
   - x64
   - x86
 install:
   - ps: Install-Product node "" $env:platform # install deps under latest runtime (source-only deps will switch cleanly for tests)
-  - npm install -g node-gyp npm-add-script
+  - npm install -g npm-add-script
   - npmAddScript -f -k install -v "" # Disable the normal install script of this module
   - npm install # Install just dependencies
 build_script:
+  - .\node_modules\.bin\node-pre-gyp clean # make sure we start clean
   - node build_matrix.js
 artifacts:
-  - path: 'lib\*.node'
+  - path: 'build\stage\*\*.tar.gz'
 test: OFF
-deploy_script:
-  - ps: if($env:APPVEYOR_REPO_COMMIT_MESSAGE.ToLower().Contains('[publish binary]')) { ./node_modules/.bin/node-pre-gyp publish }
+before_deploy:
+  - for /f "usebackq" %%v in (`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).name)"`) do set PKG_NAME=%%v # make the semver available for the deploy step
+  - for /f "usebackq" %%v in (`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).version)"`) do set PKG_VER=%%v # make the semver available for the deploy step
+deploy:
+  provider: GitHub
+  tag: $(PKG_VER)
+  description: $(PKG_NAME) $(PKG_VER)
+  auth_token:
+    secure: gkLVM16ULpFG6pKrcHVJfkyrl+ZBUJFZUto6lBuTd7FkyUlOyHE6KilyIWzsseNc
+  artifact: /.*/
+  draft: false
+  force_update: true
+  prerelease: true
+  on:
+    branch: node-pre-gyp

@@ -1,80 +1,75 @@
 {
-	"name"				: "robot-js",
-	"version"			: "1.0.2",
-	"license"			: "Zlib",
-	"main"				: "lib/Robot.js",
-
-	"description"		: "Native system automation for node.js",
-	"homepage"			: "http://getrobot.net",
-
-	"author":
-	{
-		"name"			: "David Krutsko",
-		"email"			: "dave@krutsko.net",
-		"url"			: "http://krutsko.net"
-	},
-
-	"config":
-	{
-		"verify"		: true
-	},
-
-	"repository":
-	{
-		"type"			: "git",
-		"url"			: "https://github.com/robot/robot-js.git"
-	},
-
-	"bugs":
-	{
-		"url"			: "https://github.com/robot/robot-js/issues"
-	},
-
-	"keywords":
-	[
-		"autoit",
-		"native",
-		"system",
-		"automation",
-		"hash",
-		"keyboard",
-		"mouse",
-		"process",
-		"memory",
-		"window",
-		"screen",
-		"monitor",
-		"display",
-		"timer",
-		"clock",
-		"clipboard",
-		"keylogging"
-	],
-
-	"os":
-	[
-		"linux",
-		"darwin",
-		"win32"
-	],
-
-	"devDependencies":
-	{
-		"node-gyp"		: "^3",
-		"sprintf-js"	: "^1",
-		"node-png"		: "^0",
-		"readline-sync"	: "^1"
-	},
-
-	"scripts":
-	{
-		"install"		: "node install.js || node-gyp rebuild",
-		"test"			: "node test/Test.js nowait types",
-		"electron_test"	: "electron test/Electron.js nowait types"
-	},
-
-	"engines":
-	{
-		"node"			: ">= 0.12"
-	}
+  "name": "robot-js",
+  "version": "1.0.3-prebuilt",
+  "license": "Zlib",
+  "main": "lib/Robot.js",
+  "description": "Native system automation for node.js",
+  "homepage": "http://getrobot.net",
+  "author": {
+    "name": "David Krutsko",
+    "email": "dave@krutsko.net",
+    "url": "http://krutsko.net"
+  },
+  "config": {
+    "verify": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/p120ph37/robot-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/p120ph37/robot-js/issues"
+  },
+  "keywords": [
+    "autoit",
+    "native",
+    "system",
+    "automation",
+    "hash",
+    "keyboard",
+    "mouse",
+    "process",
+    "memory",
+    "window",
+    "screen",
+    "monitor",
+    "display",
+    "timer",
+    "clock",
+    "clipboard",
+    "keylogging"
+  ],
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "binary": {
+    "module_name": "robot",
+    "module_path": "./lib/{platform}-{arch}-{node_abi}/",
+    "host": "https://github.com/p120ph37/robot-js/releases/download/",
+    "remote_path": "{version}",
+    "package_name": "{platform}-{arch}-{node_abi}.tar.gz"
+  },
+  "dependencies": {
+    "node-pre-gyp": "^0.6.34"
+  },
+  "bundledDependencies": [
+    "node-pre-gyp"
+  ],
+  "devDependencies": {
+    "node-gyp": "^3.6.1",
+    "node-png": "^0",
+    "readline-sync": "^1",
+    "sprintf-js": "^1"
+  },
+  "scripts": {
+    "prepublish": "npm ls",
+    "install": "node-pre-gyp install --fallback-to-build",
+    "test": "node test/Test.js nowait types",
+    "electron_test": "electron test/Electron.js nowait types"
+  },
+  "engines": {
+    "node": ">= 0.12"
+  }
 }

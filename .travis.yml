@@ -1,7 +1,10 @@
+branches:
+  except:
+  - /^\d+\.\d+\.\d+/ # don't double-build tags
 language: cpp
 sudo: false
 env:
-  global: NVM_PRE="7.7.4 6.10.3 5.12.0 4.8.3 0.12.17"
+  global: NVM_PRE="7.7.3 6.10.0 5.12.0 4.8.0 0.12.17"
 matrix:
   include:
     - os: linux
@@ -41,26 +44,39 @@ matrix:
             - libasound2:i386
     - os: osx
       env: NVM_OS=darwin NVM_ARCH=x64
-cache:
-  directories:
-    - node_versions
 install:
-  - | # Replace nvm with a fresh copy and pre-load with arch-specific binaries
-    rm -rf $HOME/.npm; mkdir -p $HOME/.npm
-    curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm.sh -o $HOME/.npm/nvm.sh
-    curl -s https://raw.githubusercontent.com/creationix/nvm/v0.33.2/nvm-exec -o $HOME/.npm/nvm-exec
-    chmod 755 $HOME/.npm/nvm-exec
-    mkdir -p $HOME/.nvm/versions; ln -s $HOME/node_versions $HOME/.nvm/versions/node
+  - | # Clear nvm versions and pre-load with arch-specific binaries
+    rm -rf $HOME/.nvm/versions/
     for ver in $NVM_PRE; do
       dir=$HOME/.nvm/versions/node/v$ver
-      [ -e $dir ] || mkdir -p $dir \
-        && curl -s https://nodejs.org/dist/v$ver/node-v$ver-$NVM_OS-$NVM_ARCH.tar.gz \
-        | tar -xzC$dir --strip-components=1
+      if [ ! -e $dir ]; then
+        mkdir -p $dir
+        curl -s https://nodejs.org/dist/v$ver/node-v$ver-$NVM_OS-$NVM_ARCH.tar.gz \
+          | tar -xzC$dir --strip-components=1
+      fi
     done
   - nvm ls
-  - nvm use 7.7.4 # start using one of the arch-specific versions
-  - npm install -g node-gyp npm-add-script
+  - nvm use 7.7.3 # start using one of the arch-specific versions
+  - npm install -g npm-add-script
   - npmAddScript -f -k install -v "" # Disable the normal install script of this module
   - npm install # Install just dependencies
 script:
+  - ./node_modules/.bin/node-pre-gyp clean # make sure we start clean
   - node build_matrix.js
+before_deploy:
+  - export PKG_NAME=`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).name)"`
+  - export PKG_VER=`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).version)"`
+  - export TRAVIS_TAG=$PKG_VER # feed a hypothetical tag to the github releases module
+deploy:
+  provider: releases
+  tag_name: $TRAVIS_TAG
+  description: $PKG_NAME $PKG_VER
+  api_key:
+    secure: "Fu+1ozrzYxdU4DNjXR8x/7RSZnbJiNqItFIYCK0uBwfKfFOtAsCUbL4M8KXtbUL43f+N9OsRSOHoRDUoNJuTSa+ACQCcMgaWZFWpB9IerimBrfHgP/Bge8OxiB3b3L43PppWgvwIeywOIj8WZoVuVAGNnDreWT/8N3bqPamNvHWtWbWUFcA+zjgkRbuCAiuYzGwhnZ97sd/D7jMcYX9nA74hkF+gt4x8cHgBAYu/VrtCX9akArJG+8zlRROBK49fPx9hwe5y6X9TOIz9bFXqoJS2z9LoZLgXhNtg+LLw6uQ8akFDFA05I094wtnwrY4Ihz4S8FFYSE8/B4W/V5ZdWqgdHy4tqU2ZfWiRjtGL0P8vZlIJ/yIKGY7D91TwcZAh3n09hTUMYi/weCB6Xbma69OMh01QDjvSorBlAImEFNPymER4JYqGhBmF9gHlOm1kgRp4DRrMiuSfIdM9aTvThY915D62NKRCrZ4MiMyfS6d1POBsz/TWvJW8OIhIDQrVbjmmV9Wr8r9TkMLOTucrHVuK+ZcH1NETiBaMbXZ4+0Y8DHxMFG1kkS6u52d08XXftmG27Ui9yKoGmezPWhlpOLIWTthI0C7MWHYbpYKIhf70A/cJ96DcXT8XQgebrGH/fFMgT6Jb6kSXoSbo8L2+dyINdu6YjvG84AmOD8osffs="
+  file_glob: true
+  file: build/stage/*/*.tar.gz
+  draft: false
+  prerelease: true
+  overwrite: true
+  on: node-pre-gyp
+  skip_cleanup: true

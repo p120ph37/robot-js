@@ -48,61 +48,40 @@ function run_with(v) {
 	}
 }
 
-var electron_url = 'https://atom.io/download/electron';
-var matrix = [
-//	{ abi: 57, node: '8.0.0'					  },
-//	{ abi: 56,					electron: '1.9.0' },
-//	{ abi: 55,					electron: '1.8.0' },
-//	{ abi: 54,					electron: '1.7.0' },
-	{ abi: 53,					electron: '1.6.9' },
-	{ abi: 51, node: '7.7.4'					  },
-	// electron 1.5.x was beta and never fully released
-	{ abi: 50,					electron: '1.4.16'},
-	{ abi: 49,					electron: '1.3.15'},
-	// electron 1.2.x incorrectly claims to be node-abi-48, but isn't
-	// see: https://github.com/electron/electron/issues/5851
-	{ abi: 48, node: '6.10.3'					  },
-	{ abi: 47, node: '5.12.0'					  },
-	{ abi: 46, node: '4.8.3'					  },
-	{ abi: 14, node: '0.12.17'					  },
-];
-
-for(var i = 0; i < matrix.length; i++) {
-	var name = process.platform + '-' + process.arch + '-' + matrix[i].abi + '.node';
-	var fullname = path.join(__dirname, 'lib', name);
-	log('Building ' + name);
-	// Clear previous binary if present
-	fs.existsSync(fullname) && fs.unlinkSync(fullname);
-	// prefer to build using node headers (even if electron shares this ABI)
-	if(matrix[i].node) {
-		log('Compiling against node=' + matrix[i].node);
-		run('node-gyp', 'rebuild', '--target=' + matrix[i].node);
-	} else {
-		log('Compiling against electron=' + matrix[i].electron);
-		run('node-gyp', 'rebuild', '--target=' + matrix[i].electron, '--dist-url=' + electron_url);
-	}
-	// check that the expected binary was produced
-	var size = fs.existsSync(fullname) ? fs.statSync(fullname).size : 0;
-	if(size > 0) {
-		log('Produced: ' + name + ' - Size: ' + size);
-	} else {
-		die('Expected artifact "' + fullname + '" not found!');
-	}
+var node_ver = ['7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17'];
+for(var v of node_ver) {
+	log('Compiling, testing, packaging, and publishing for node v' + v);
+	run(
+	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'configure', 'build',
+	  '--runtime=node', '--target=' + v
+	);
 	// run tests
-	if(matrix[i].node) {
-		log('Testing against node=' + matrix[i].node);
-		run_with(matrix[i].node,'npm', 'run', 'test');
-		log('Test completed against node=' + matrix[i].node);
+	run_with(v, 'npm', 'run', 'test');
+	// package
+	run(
+	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'package',
+	  '--runtime=node', '--target=' + v
+	);
+}
+
+var electron_ver = ['1.7.1', '1.6.8', '1.5.1', '1.4.16', '1.3.15'];  // don't bother with the older "electron-prebuilt" versions
+for(var v of electron_ver) {
+	log('Compiling, testing, packaging, and publishing for electron v' + v);
+	run(
+	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'configure', 'build',
+	  '--runtime=electron', '--target=' + v,
+	  '--dist-url=https://atom.io/download/electron'
+	);
+	// run tests
+	run('npm', 'install', '-g', 'electron@' + v);
+	if(process.platform === 'linux') {
+		run('xvfb-run', 'npm', 'run', 'electron_test');
+	} else {
+		run('npm', 'run', 'electron_test');
 	}
-	if(matrix[i].electron) {
-		log('Testing against electron=' + matrix[i].electron);
-		run('npm', 'install', '-g', 'electron@' + matrix[i].electron);
-		if(process.platform === 'linux') {
-			run('xvfb-run', 'npm', 'run', 'electron_test');
-		} else {
-			run('npm', 'run', 'electron_test');
-		}
-		log('Test completed against electron=' + matrix[i].electron);
-	}
-	log('All tests completed!');
+	// package
+	run(
+	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'package',
+	  '--runtime=electron', '--target=' + v
+	);
 }
