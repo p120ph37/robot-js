@@ -60,7 +60,7 @@ install:
 script:
   - ./node_modules/.bin/node-pre-gyp clean # make sure we start clean
   - node build_matrix.js
-pre_deploy:
+before_deploy:
   - export SEMVER=`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).version)"` # make the semver available for the deploy step
   - export TRAVIS_TAG=$SEMVER # feed a hypothetical tag to the github releases module
 deploy:
