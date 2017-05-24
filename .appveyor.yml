@@ -10,7 +10,7 @@ install:
 build_script:
   - .\node_modules\.bin\node-pre-gyp clean # make sure we start clean
   - node build_matrix.js
-  - for /f "usebackq" %v in (`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).version)"`) do set SEMVER=%v # make the semver available for the deploy step
+  - for /f "usebackq" %%v in (`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).version)"`) do set SEMVER=%%v # make the semver available for the deploy step
 artifacts:
   - path: 'build\stage\*\*.tar.gz'
 test: OFF
