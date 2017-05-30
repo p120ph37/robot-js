@@ -52,7 +52,7 @@
     "package_name": "{platform}-{arch}-{node_abi}.tar.gz"
   },
   "dependencies": {
-    "node-pre-gyp": "0.6.34"
+    "node-pre-gyp": "https://github.com/mapbox/node-pre-gyp/archive/electron-skip.tar.gz"
   },
   "bundledDependencies": [
     "node-pre-gyp"
