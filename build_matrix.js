@@ -48,7 +48,7 @@ function run_with(v) {
 	}
 }
 
-var node_ver = ['7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17'];
+var node_ver = ['8.0.0', '7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17'];
 for(var v of node_ver) {
 	log('Compiling, testing, packaging, and publishing for node v' + v);
 	run(
