@@ -48,7 +48,7 @@ function run_with(v) {
 	}
 }
 
-var node_ver = ['8.0.0', '7.7.3', '6.10.0', '5.12.0', '4.8.0', '0.12.17'];
+var node_ver = process.argv[2] ? process.argv[2].split(' ') : [];
 for(var v of node_ver) {
 	log('Compiling, testing, packaging, and publishing for node v' + v);
 	run(
@@ -56,7 +56,7 @@ for(var v of node_ver) {
 	  '--runtime=node', '--target=' + v
 	);
 	// run tests
-	run_with(v, 'npm', 'run', 'test');
+	run_with(v, 'npm', 'run', 'test:ci:node');
 	// package
 	run(
 	  path.join('node_modules', '.bin', 'node-pre-gyp'), 'package',
@@ -64,7 +64,7 @@ for(var v of node_ver) {
 	);
 }
 
-var electron_ver = ['1.7.1', '1.6.8', '1.5.1', '1.4.16', '1.3.15'];  // don't bother with the older "electron-prebuilt" versions
+var electron_ver = process.argv[3] ? process.argv[3].split(' ') : [];  // don't bother with the older "electron-prebuilt" versions
 for(var v of electron_ver) {
 	log('Compiling, testing, packaging, and publishing for electron v' + v);
 	run(
@@ -75,9 +75,9 @@ for(var v of electron_ver) {
 	// run tests
 	run('npm', 'install', '-g', 'electron@' + v);
 	if(process.platform === 'linux') {
-		run('xvfb-run', 'npm', 'run', 'electron_test');
+		run('xvfb-run', 'npm', 'run', 'test:ci:electron');
 	} else {
-		run('npm', 'run', 'electron_test');
+		run('npm', 'run', 'test:ci:electron');
 	}
 	// package
 	run(
