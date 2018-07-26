@@ -160,7 +160,7 @@
 						}
 					},
 
-					"msvs_disabled_warnings": [ 4005, 4661 ]
+					"msvs_disabled_warnings": [ 4005, 4661, 4011 ]
 				}]
 			]
 		},
