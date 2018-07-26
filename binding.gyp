@@ -6,15 +6,10 @@
 		[ "OS == 'win'",   { "variables": { "target_platform": "win32"  }}]
 	],
 
-	"variables":
-	{
-		"target_module_version": "<!(node <(module_root_dir)/scripts/getabi.js <(node_root_dir))"
-	},
-
 	"targets":
 	[
 		{
-			"target_name": "<(target_platform)-<(target_arch)-<(target_module_version)",
+			"target_name": "<(module_name)",
 
 			"sources":
 			[
@@ -132,17 +127,6 @@
 						"src/NodeRobot.rc"
 					],
 
-					"msvs_settings":
-					{
-						"VCResourceCompilerTool":
-						{
-							"PreprocessorDefinitions":
-							[
-								"TARGET_MODULE_VERSION=<(target_module_version)"
-							]
-						}
-					},
-
 					"configurations":
 					{
 						"Debug":
@@ -186,7 +170,7 @@
 
 			"dependencies":
 			[
-				"<(target_platform)-<(target_arch)-<(target_module_version)"
+				"<(module_name)"
 			],
 
 			"copies":
@@ -201,7 +185,7 @@
 								"<(PRODUCT_DIR)/<@(_dependencies).node"
 							],
 
-							"destination": "<(module_root_dir)/lib/"
+							"destination": "<(module_path)"
 						}],
 
 						[ "OS == 'mac'", {
@@ -211,7 +195,7 @@
 								"<(PRODUCT_DIR)/<@(_dependencies).node"
 							],
 
-							"destination": "<(module_root_dir)/lib/"
+							"destination": "<(module_path)"
 						}],
 
 						[ "OS == 'win'", {
@@ -222,7 +206,7 @@
 								"<(PRODUCT_DIR)/<@(_dependencies).pdb"
 							],
 
-							"destination": "<(module_root_dir)/lib/"
+							"destination": "<(module_path)"
 						}]
 					]
 				}

@@ -1,0 +1,82 @@
+branches:
+  except:
+  - /^\d+\.\d+\.\d+/ # don't double-build tags
+language: cpp
+sudo: false
+env:
+  global: ELECTRON_VERSIONS="1.7.1 1.6.8 1.5.1 1.4.16 1.3.15"
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      env: NVM_OS=linux NVM_ARCH=x64 NODE_VERSIONS="8.0.0 7.7.3 6.10.0 5.12.0 4.8.0 0.12.17"
+      addons:
+        apt:
+          packages:
+            # for robot to build
+            - libxinerama-dev
+            - libxtst-dev
+            # for electron to run
+            - libgtk2.0-0
+            - libx11-xcb1
+            - libxss1
+            - libudev1
+            - libgconf-2-4
+            - libnss3
+            - libasound2
+    - os: linux
+      dist: trusty
+      env: NVM_OS=linux NVM_ARCH=x86 NODE_VERSIONS="8.0.0 7.7.3 6.10.0 5.12.0 4.8.0 0.12.17"
+      addons:
+        apt:
+          packages:
+            # for robot to build
+            - g++-multilib
+            - libxinerama-dev:i386
+            - libxtst-dev:i386
+            # for electron to run
+            - libgtk2.0-0:i386
+            - libx11-xcb1:i386
+            - libxss1:i386
+            - libudev1:i386
+            - libgconf-2-4:i386
+            - libnss3:i386
+            - libasound2:i386
+    - os: osx
+      env: NVM_OS=darwin NVM_ARCH=x64 NODE_VERSIONS="8.0.0 7.7.3 6.10.0 5.12.0 4.8.0"
+install:
+  - | # Clear nvm versions and pre-load with arch-specific binaries
+    rm -rf $HOME/.nvm/versions/
+    for ver in $NODE_VERSIONS; do
+      dir=$HOME/.nvm/versions/node/v$ver
+      if [ ! -e $dir ]; then
+        mkdir -p $dir
+        curl -s https://nodejs.org/dist/v$ver/node-v$ver-$NVM_OS-$NVM_ARCH.tar.gz \
+          | tar -xzC$dir --strip-components=1
+      fi
+    done
+  - nvm ls
+  - nvm use ${NODE_VERSIONS%% *} # start using one of the arch-specific versions
+  - npm install -g npm-add-script
+  - npmAddScript -f -k install -v "" # Disable the normal install script of this module
+  - npm install # Install just dependencies
+script:
+  - ./node_modules/.bin/node-pre-gyp clean # make sure we start clean
+  - node build_matrix.js "$NODE_VERSIONS" "$ELECTRON_VERSIONS"
+before_deploy:
+  - export PKG_NAME=`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).name)"`
+  - export PKG_VER=`node -e "console.log(JSON.parse(require ('fs').readFileSync('package.json')).version)"`
+  - export TRAVIS_TAG=$PKG_VER # feed a hypothetical tag to the github releases module
+deploy:
+  provider: releases
+  tag_name: $TRAVIS_TAG
+  description: $PKG_NAME $PKG_VER
+  api_key:
+    secure: "Fu+1ozrzYxdU4DNjXR8x/7RSZnbJiNqItFIYCK0uBwfKfFOtAsCUbL4M8KXtbUL43f+N9OsRSOHoRDUoNJuTSa+ACQCcMgaWZFWpB9IerimBrfHgP/Bge8OxiB3b3L43PppWgvwIeywOIj8WZoVuVAGNnDreWT/8N3bqPamNvHWtWbWUFcA+zjgkRbuCAiuYzGwhnZ97sd/D7jMcYX9nA74hkF+gt4x8cHgBAYu/VrtCX9akArJG+8zlRROBK49fPx9hwe5y6X9TOIz9bFXqoJS2z9LoZLgXhNtg+LLw6uQ8akFDFA05I094wtnwrY4Ihz4S8FFYSE8/B4W/V5ZdWqgdHy4tqU2ZfWiRjtGL0P8vZlIJ/yIKGY7D91TwcZAh3n09hTUMYi/weCB6Xbma69OMh01QDjvSorBlAImEFNPymER4JYqGhBmF9gHlOm1kgRp4DRrMiuSfIdM9aTvThY915D62NKRCrZ4MiMyfS6d1POBsz/TWvJW8OIhIDQrVbjmmV9Wr8r9TkMLOTucrHVuK+ZcH1NETiBaMbXZ4+0Y8DHxMFG1kkS6u52d08XXftmG27Ui9yKoGmezPWhlpOLIWTthI0C7MWHYbpYKIhf70A/cJ96DcXT8XQgebrGH/fFMgT6Jb6kSXoSbo8L2+dyINdu6YjvG84AmOD8osffs="
+  file_glob: true
+  file: build/stage/*/*.tar.gz
+  draft: false
+  prerelease: true
+  overwrite: true
+  on: prebuilt
+  skip_cleanup: true
