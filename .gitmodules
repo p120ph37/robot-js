@@ -1,3 +1,4 @@
 [submodule "src/robot"]
 	path = src/robot
-	url = https://github.com/robot/robot
+	url = https://github.com/p120ph37/robot
+	branch = issue-114
