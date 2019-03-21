@@ -92,7 +92,7 @@
 
 	"dependencies":
 	{
-		"node-pre-gyp"	: "^0.10.3"
+		"node-pre-gyp"	: "^0.12.0"
 	},
 
 	"devDependencies":
