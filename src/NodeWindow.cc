@@ -396,7 +396,7 @@ void WindowWrap::New (const FunctionCallbackInfo<Value>& args)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void WindowWrap::Initialize (Handle<Object> exports)
+void WindowWrap::Initialize (Local<Object> exports)
 {
 	// Get the current isolated V8 instance
 	Isolate* isolate = Isolate::GetCurrent();

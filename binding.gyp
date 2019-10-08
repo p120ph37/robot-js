@@ -43,7 +43,7 @@
 				"src/NodeClipboard.cc"
 			],
 
-			"include_dirs": [ "src/robot/Source/" ],
+			"include_dirs": [ "src/robot/Source/", "<!(node -e \"require('nan')\")" ],
 
 			"conditions":
 			[

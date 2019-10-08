@@ -96,7 +96,7 @@ void ScreenWrap::SetCompositing (const FunctionCallbackInfo<Value>& args)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void ScreenWrap::Initialize (Handle<Object> exports)
+void ScreenWrap::Initialize (Local<Object> exports)
 {
 	// Get the current isolated V8 instance
 	Isolate* isolate = Isolate::GetCurrent();

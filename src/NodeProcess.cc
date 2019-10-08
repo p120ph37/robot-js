@@ -345,7 +345,7 @@ void ProcessWrap::New (const FunctionCallbackInfo<Value>& args)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void ProcessWrap::Initialize (Handle<Object> exports)
+void ProcessWrap::Initialize (Local<Object> exports)
 {
 	// Get the current isolated V8 instance
 	Isolate* isolate = Isolate::GetCurrent();

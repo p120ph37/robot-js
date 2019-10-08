@@ -100,7 +100,7 @@ void ClipboardWrap::GetSequence (const FunctionCallbackInfo<Value>& args)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void ClipboardWrap::Initialize (Handle<Object> exports)
+void ClipboardWrap::Initialize (Local<Object> exports)
 {
 	// Get the current isolated V8 instance
 	Isolate* isolate = Isolate::GetCurrent();

@@ -231,7 +231,7 @@ static void Clock (const FunctionCallbackInfo<Value>& args)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static void Initialize (Handle<Object> exports)
+static void Initialize (Local<Object> exports)
 {
 	NODE_SET_METHOD (exports, "prepare", Prepare);
 	NODE_SET_METHOD (exports, "sleep",   Sleep  );

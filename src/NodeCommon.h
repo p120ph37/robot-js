@@ -219,7 +219,7 @@ enum RobotType
 ////////////////////////////////////////////////////////////////////////////////
 
 template <class T>
-inline T* UnwrapRobot (Handle<Value> value)
+inline T* UnwrapRobot (Local<Value> value)
 {
 	// Get the current isolated V8 instance
 	Isolate* isolate = Isolate::GetCurrent();

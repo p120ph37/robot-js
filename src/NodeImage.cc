@@ -226,7 +226,7 @@ void ImageWrap::New (const FunctionCallbackInfo<Value>& args)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void ImageWrap::Initialize (Handle<Object> exports)
+void ImageWrap::Initialize (Local<Object> exports)
 {
 	// Get the current isolated V8 instance
 	Isolate* isolate = Isolate::GetCurrent();
