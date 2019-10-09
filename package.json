@@ -69,11 +69,11 @@
 		"package_name": "{platform}-{arch}-{node_abi}.tar.gz"
 	},
 	"dependencies": {
-		"nan": "^2.14.0",
-		"node-gyp": "^6.0.0",
 		"node-pre-gyp": "^0.13.0"
 	},
 	"devDependencies": {
+		"nan": "^2.14.0",
+		"node-gyp": "^6.0.0",
 		"sprintf-js": "~1.1",
 		"node-png": "~0.4",
 		"readline-sync": "~1.4"

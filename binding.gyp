@@ -141,7 +141,10 @@
 							{
 								"VCCLCompilerTool": { "ExceptionHandling": 1 },
 								"VCLinkerTool":     { "SubSystem":         2 }
-							}
+							},
+
+							"msvs_disabled_warnings": [ 4005, 4661, 4011 ]
+
 						},
 
 						"Release":
@@ -156,11 +159,12 @@
 							{
 								"VCCLCompilerTool": { "ExceptionHandling": 1 },
 								"VCLinkerTool":     { "SubSystem":         2 }
-							}
+							},
+
+							"msvs_disabled_warnings": [ 4005, 4661, 4011 ]
 						}
 					},
 
-					"msvs_disabled_warnings": [ 4005, 4661, 4011 ]
 				}]
 			]
 		},
