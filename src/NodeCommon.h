@@ -120,21 +120,27 @@ ROBOT_NS_USE_ALL;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if NODE_MODULE_VERSION >= 70
-#define BOOLEAN_VALUE( value ) (value->BooleanValue (isolate))
+#if NODE_MODULE_VERSION >= 57
 #define UTF8_VAR( var, value ) String::Utf8Value var (isolate, value)
 #else
-#define BOOLEAN_VALUE( value ) (value->BooleanValue())
 #define UTF8_VAR( var, value ) String::Utf8Value var (value)
 #endif
 
-#if NODE_MODULE_VERSION >= 67
+#if NODE_MODULE_VERSION >= 70
+#define BOOLEAN_VALUE( value ) (value->BooleanValue (isolate))
+#elif NODE_MODULE_VERSION >= 46
+#define BOOLEAN_VALUE( value ) (value->BooleanValue (isolate->GetCurrentContext()).FromJust())
+#else
+#define BOOLEAN_VALUE( value ) (value->BooleanValue())
+#endif
+
+#if NODE_MODULE_VERSION >= 46
 #define TO_OBJECT( value ) (value->ToObject (isolate->GetCurrentContext()).ToLocalChecked())
-#define NUMBER_VALUE( value ) (value->NumberValue (isolate->GetCurrentContext()).ToChecked())
-#define INT32_VALUE( value ) (value->Int32Value (isolate->GetCurrentContext()).ToChecked())
-#define UINT32_VALUE( value ) (value->Uint32Value (isolate->GetCurrentContext()).ToChecked())
+#define NUMBER_VALUE( value ) (value->NumberValue (isolate->GetCurrentContext()).FromJust())
+#define INT32_VALUE( value ) (value->Int32Value (isolate->GetCurrentContext()).FromJust())
+#define UINT32_VALUE( value ) (value->Uint32Value (isolate->GetCurrentContext()).FromJust())
 #define OBJECT_GET( map, key ) (map->Get (isolate->GetCurrentContext(), key).ToLocalChecked())
-#define OBJECT_SET( map, key, value ) (map->Set (isolate->GetCurrentContext(), key, value).ToChecked())
+#define OBJECT_SET( map, key, value ) (map->Set (isolate->GetCurrentContext(), key, value).FromJust())
 #define GET_FUNCTION( tpl ) (tpl->GetFunction (isolate->GetCurrentContext()).ToLocalChecked())
 #else
 #define TO_OBJECT( value ) (value->ToObject())
@@ -144,6 +150,12 @@ ROBOT_NS_USE_ALL;
 #define OBJECT_GET( map, key ) (map->Get (key))
 #define OBJECT_SET( map, key, value ) (map->Set (key, value))
 #define GET_FUNCTION( tpl ) (tpl->GetFunction())
+#endif
+
+#if NODE_MODULE_VERSION >= 82
+#define ARRAY_BUFFER_VAR( var, data, size ) auto var = ArrayBuffer::New (isolate, ArrayBuffer::NewBackingStore(data, size, [](void*, size_t, void*){}, nullptr))
+#else
+#define ARRAY_BUFFER_VAR( var, data, size ) auto var = ArrayBuffer::New (isolate, data, size)
 #endif
 
 #if NODE_MODULE_VERSION >= 48

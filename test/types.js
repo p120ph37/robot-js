@@ -253,15 +253,15 @@ module.exports = function (robot, log, sprintf, getline, assert)
 		assert (h8.ne (h9));
 		assert (h9.ne (h8));
 
-		h1 = new Hash (Buffer (".M:.Ak=-n.~.%^njfb|*-!9+dO3o"    ));
-		h2 = new Hash (Buffer ("7J4P67_09;!5=-;55.2_x!533aH7_X"  ));
-		h3 = new Hash (Buffer ("ai!.tc_Z-*%x6%3TCb0Yjxh^84D8A"   ));
-		h4 = new Hash (Buffer (";e.o;V7F.qut;thwdO^:|^=!3;.!+~H" ));
-		h5 = new Hash (Buffer ("q3_!GG:%8z54=%c!!o7~!.^Wwj%=_R"  ));
-		h6 = new Hash (Buffer ("b;B7+t=.^^.L*%i9;|*%S++56q.|%~^u"));
-		h7 = new Hash (Buffer ("Us*Fki-XgYTp.OVWL|t~GxrQ5G;7xC"  ));
-		h8 = new Hash (Buffer ("%e*5aY681;Z0TX_-n~:4~^0W-6_D"    ));
-		h9 = new Hash (Buffer ("r73%Q-9dz!YB:j2!9*64B+M%j+O4e"   ));
+		h1 = new Hash (Buffer.from (".M:.Ak=-n.~.%^njfb|*-!9+dO3o"    ));
+		h2 = new Hash (Buffer.from ("7J4P67_09;!5=-;55.2_x!533aH7_X"  ));
+		h3 = new Hash (Buffer.from ("ai!.tc_Z-*%x6%3TCb0Yjxh^84D8A"   ));
+		h4 = new Hash (Buffer.from (";e.o;V7F.qut;thwdO^:|^=!3;.!+~H" ));
+		h5 = new Hash (Buffer.from ("q3_!GG:%8z54=%c!!o7~!.^Wwj%=_R"  ));
+		h6 = new Hash (Buffer.from ("b;B7+t=.^^.L*%i9;|*%S++56q.|%~^u"));
+		h7 = new Hash (Buffer.from ("Us*Fki-XgYTp.OVWL|t~GxrQ5G;7xC"  ));
+		h8 = new Hash (Buffer.from ("%e*5aY681;Z0TX_-n~:4~^0W-6_D"    ));
+		h9 = new Hash (Buffer.from ("r73%Q-9dz!YB:j2!9*64B+M%j+O4e"   ));
 
 		assert (h1.result === 0x73FECF56);
 		assert (h2.result === 0xA99190FB);

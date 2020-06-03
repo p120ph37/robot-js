@@ -85,8 +85,7 @@ void ImageWrap::GetData (const FunctionCallbackInfo<Value>& args)
 	uint32  size = mImage->GetLength();
 
 	// Bind reference and return view
-	auto b = ArrayBuffer::New (isolate,
-		 data, size * sizeof (uint32));
+	ARRAY_BUFFER_VAR(b, data, size * sizeof (uint32));
 
 	RETURN (Uint32Array::New (b, 0, size));
 }
