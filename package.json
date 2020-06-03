@@ -73,9 +73,9 @@
 	},
 	"devDependencies": {
 		"nan": "^2.14.0",
-		"node-gyp": "^6.0.0",
-		"sprintf-js": "~1.1",
+		"node-gyp": "^7.0.0",
 		"node-png": "~0.4",
-		"readline-sync": "~1.4"
+		"readline-sync": "~1.4",
+		"sprintf-js": "~1.1"
 	}
 }
