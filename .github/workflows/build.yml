@@ -3,10 +3,10 @@ on: [push]
 env:
   NODE_HOST_VERSION: 14.4.0
   NODE_VERSIONS: 14.4.0 13.12.0 12.18.1 11.15.0 10.21.0 9.11.2 8.17.0 7.10.1 6.14.3 5.12.0 4.8.0
-  ELECTRON_VERSIONS: 9.0.5 8.3.0 7.3.0 6.0.11 5.0.11 4.1.1 4.0.8 3.1.7 3.0.16
+  ELECTRON_VERSIONS: 9.1.0 9.0.5 8.4.0 8.3.4 8.2.5 8.1.1 8.0.3 7.3.2 7.2.4 7.1.14 7.0.1 6.1.12 6.0.12 5.0.13 4.2.12 4.1.5 4.0.8 3.1.13 3.0.16
 jobs:
   windows:
-    runs-on: windows-2016
+    runs-on: windows-2019
     steps:
       - shell: cmd
         run: |
@@ -37,7 +37,7 @@ jobs:
             nvm use $NODE_HOST_VERSION ${a:(-2)} && sleep 3
             npm install --ignore-scripts
             for v in $NODE_VERSIONS; do
-              npm run build -- --runtime=node --target=$v --target_arch=$a
+              npm run build -- set --msvs_version=2019 --runtime=node --target=$v --target_arch=$a
               nvm use $v ${a:(-2)} && sleep 3
               npm run test:ci:node
               nvm use $NODE_HOST_VERSION ${a:(-2)} && sleep 3
