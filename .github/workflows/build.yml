@@ -1,136 +1,118 @@
 name: Build
 on: [push]
 env:
-  NODE_HOST_VERSION: 14.4.0
-  NODE_VERSIONS: 14.4.0 13.12.0 12.18.1 11.15.0 10.21.0 9.11.2 8.17.0 7.10.1 6.14.3 5.12.0 4.8.0
-  ELECTRON_VERSIONS: 9.1.0 9.0.5 8.4.0 8.3.4 8.2.5 8.1.1 8.0.3 7.3.2 7.2.4 7.1.14 7.0.1 6.1.12 6.0.12 5.0.13 4.2.12 4.1.5 4.0.8 3.1.13 3.0.16
+  HOST_NODE_VERSION: 14.4.0
 jobs:
-  windows:
-    runs-on: windows-2019
+  build:
+    strategy:
+      matrix:
+        os:
+          - windows-2019
+          - ubuntu-18.04
+          - macos-10.15
+        arch:
+          - 64
+          - 32
+        runtime_target:
+          - node-14.4.0
+          - node-13.12.0
+          - node-12.18.1
+          - node-11.15.0
+          - node-10.21.0
+          - node-9.11.2
+          - node-8.17.0
+          - node-7.10.1
+          - node-6.14.3
+          - node-5.12.0
+          - node-4.8.0
+          - electron-9.1.0
+          - electron-9.0.5
+          - electron-8.4.0
+          - electron-8.3.4
+          - electron-8.2.5
+          - electron-8.1.1
+          - electron-8.0.3
+          - electron-7.3.2
+          - electron-7.2.4
+          - electron-7.1.14
+          - electron-7.0.1
+          - electron-6.1.12
+          - electron-6.0.12
+          - electron-5.0.13
+          - electron-4.2.12
+          - electron-4.1.5
+          - electron-4.0.8
+          - electron-3.1.13
+          - electron-3.0.16
+        exclude:
+          - os: ubuntu-18.04
+            arch: 32
+          - os: macos-10.15
+            arch: 32
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     steps:
-      - shell: cmd
+      - if: ${{ runner.os == 'Windows' }}
+        shell: cmd
         run: |
           echo ::set-env name=NVM_HOME::%ProgramData%\nvm
           echo ::set-env name=NVM_SYMLINK::%ProgramFiles%\nodejs
-          echo ::set-env name=NPM_CACHE::%NPM_CONFIG_CACHE%
           echo ::add-path::%ProgramData%\nvm
           rd /s /q "%ProgramFiles%\nodejs"
-      - uses: actions/cache@v1
+      - if: ${{ runner.os == 'Windows' }}
+        uses: actions/cache@v1
         with:
           path: ${{ env.NVM_HOME }}
           key: nvm-windows
-      - uses: actions/cache@v1
-        with:
-          path: ${{ env.NPM_CACHE }}
-          key: npm-windows
+      - if: ${{ runner.os == 'Linux' }}
+        run: |
+          echo ::set-env name=NVM_HOME::$HOME/.nvm
+          sudo apt-get install libxinerama-dev libxtst-dev
+      - if: ${{ runner.os == 'macOS' }}
+        run: |
+          echo ::set-env name=NVM_HOME::$HOME/.nvm
+          echo ::set-env name=PYTHON::/usr/local/bin/python
       - uses: actions/checkout@v1
         with: 
           submodules: recursive
-      - shell: bash
+      - env:
+          RUNTIME_TARGET: ${{ matrix.runtime_target }}
+          ARCH: ${{ matrix.arch }}
         run: |
-          which nvm || choco install nvm
-          for v in $NODE_HOST_VERSION $NODE_VERSIONS; do
-            nvm install $v 32
-            nvm install $v 64
-          done
-          for a in ia32 x64; do
-            nvm use $NODE_HOST_VERSION ${a:(-2)} && sleep 3
-            npm install --ignore-scripts
-            for v in $NODE_VERSIONS; do
-              npm run build -- set --msvs_version=2019 --runtime=node --target=$v --target_arch=$a
-              nvm use $v ${a:(-2)} && sleep 3
+          [ -e "$NVM_HOME/nvm.sh" ] || which nvm || choco install nvm
+          [ -e "$NVM_HOME/nvm.sh" ] && . "$NVM_HOME/nvm.sh"
+          nvm install $HOST_NODE_VERSION $ARCH
+          nvm use $HOST_NODE_VERSION $ARCH && sleep 3
+          npm ci --ignore-scripts
+          case $RUNTIME_TARGET in
+            node-*)
+              npm run build -- \
+                --runtime=node \
+                --target=${RUNTIME_TARGET#*-}
+              nvm install ${RUNTIME_TARGET#*-} $ARCH
+              nvm use ${RUNTIME_TARGET#*-} $ARCH && sleep 3
               npm run test:ci:node
-              nvm use $NODE_HOST_VERSION ${a:(-2)} && sleep 3
-            done
-            for v in $ELECTRON_VERSIONS; do
-              npm run build -- --runtime=electron --target=$v --target_arch=$a --dist-url=https://atom.io/download/electron
-              npm install --no-save electron@$v
-              npm run test:ci:electron
-            done
-          done
-      - uses: actions/upload-artifact@v2
-        with:
-          path: build/stage/*/*.tar.gz
-  linux:
-    runs-on: ubuntu-18.04
-    steps:
-      - run: |
-          echo ::set-env name=NVM_HOME::$HOME/.nvm
-          echo ::set-env name=NPM_CACHE::$HOME/.npm
-          sudo apt-get install libxinerama-dev libxtst-dev
-      - uses: actions/cache@v1
-        with:
-          path: ${{ env.NVM_HOME }}
-          key: nvm-linux
-      - uses: actions/cache@v1
-        with:
-          path: ${{ env.NPM_CACHE }}
-          key: npm-linux
-      - uses: actions/checkout@v1
-        with:
-          submodules: recursive
-      - run: |
-          . "$NVM_HOME/nvm.sh"
-          for v in $NODE_HOST_VERSION $NODE_VERSIONS; do
-            nvm install $v
-          done
-          nvm use $NODE_HOST_VERSION
-          npm install --ignore-scripts
-          for v in $NODE_VERSIONS; do
-            npm run build -- --runtime=node --target=$v
-            nvm use $v
-            npm run test:ci:node
-            nvm use $NODE_HOST_VERSION
-          done
-          for v in $ELECTRON_VERSIONS; do
-            npm run build -- --runtime=electron --target=$v --dist-url=https://atom.io/download/electron
-            npm install --no-save electron@$v
-            xvfb-run npm run test:ci:electron
-          done
-      - uses: actions/upload-artifact@v2
-        with:
-          path: build/stage/*/*.tar.gz
-  darwin:
-    runs-on: macos-10.15
-    steps:
-      - run: |
-          echo ::set-env name=NVM_HOME::$HOME/.nvm
-          echo ::set-env name=NPM_CACHE::$HOME/.npm
-          echo ::set-env name=PYTHON::/usr/local/bin/python
-      - uses: actions/cache@v1
-        with:
-          path: ${{ env.NVM_HOME }}
-          key: nvm-darwin
-      - uses: actions/cache@v1
-        with:
-          path: ${{ env.NPM_CACHE }}
-          key: npm-darwin
-      - uses: actions/checkout@v1
-        with:
-          submodules: recursive
-      - run: |
-          . "$NVM_HOME/nvm.sh"
-          for v in $NODE_HOST_VERSION $NODE_VERSIONS; do
-            nvm install $v
-          done
-          nvm use $NODE_HOST_VERSION
-          npm install --ignore-scripts
-          for v in $NODE_VERSIONS; do
-            npm run build -- --runtime=node --target=$v
-            nvm use $v
-            npm run test:ci:node
-            nvm use $NODE_HOST_VERSION
-          done
-          for v in $ELECTRON_VERSIONS; do
-            npm run build -- --runtime=electron --target=$v --dist-url=https://atom.io/download/electron
-            npm install --no-save electron@$v
-            npm run test:ci:electron
-          done
+              ;;
+            electron-*)
+              npm run build -- \
+                --runtime=electron \
+                --target=${RUNTIME_TARGET#*-} \
+                --dist-url=https://atom.io/download/electron
+              npm install --no-save electron@${RUNTIME_TARGET#*-}
+              if which xvfb-run; then
+                xvfb-run npm run test:ci:electron
+              else
+                npm run test:ci:electron
+              fi
+              ;;
+          esac
       - uses: actions/upload-artifact@v2
         with:
           path: build/stage/*/*.tar.gz
   release:
-    needs: [windows, linux, darwin]
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -145,5 +127,5 @@ jobs:
           name: artifact
           path: build/stage
       - run: |
-          npm install --ignore-scripts
+          npm ci --ignore-scripts
           GITHUB_TOKEN=${{ github.token }} npm run release

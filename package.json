@@ -21,7 +21,7 @@
 	},
 	"scripts": {
 		"install": "node-pre-gyp install --fallback-to-build",
-		"build": "node-pre-gyp rebuild package --build-from-source --thin=yes -j max",
+		"build": "node-pre-gyp rebuild package --build-from-source --thin=yes --jobs=max",
 		"release": "node ./publish-release.js",
 		"test": "node test/test.js types timer",
 		"test:ci:node": "node test/test.js types",
