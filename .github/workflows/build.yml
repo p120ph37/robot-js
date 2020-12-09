@@ -25,7 +25,8 @@ jobs:
           - electron-9.2.1
           - electron-9.1.2
           - electron-9.0.5
-          - electron-8.4.0
+          - electron-8.5.5
+          - electron-8.4.1
           - electron-8.3.4
           - electron-8.2.5
           - electron-8.1.1
@@ -43,9 +44,9 @@ jobs:
       - if: ${{ runner.os == 'Windows' }}
         shell: cmd
         run: |
-          echo ::set-env name=NVM_HOME::%ProgramData%\nvm
-          echo ::set-env name=NVM_SYMLINK::%ProgramFiles%\nodejs
-          echo ::add-path::%ProgramData%\nvm
+          echo NVM_HOME=%ProgramData%\nvm >>%GITHUB_ENV%
+          echo NVM_SYMLINK=%ProgramFiles%\nodejs >>%GITHUB_ENV%
+          echo %ProgramData%\nvm >>%GITHUB_PATH%
           rd /s /q "%ProgramFiles%\nodejs"
       - if: ${{ runner.os == 'Windows' }}
         uses: actions/cache@v1
@@ -54,12 +55,12 @@ jobs:
           key: nvm-windows
       - if: ${{ runner.os == 'Linux' }}
         run: |
-          echo ::set-env name=NVM_HOME::$HOME/.nvm
+          echo NVM_HOME=$HOME/.nvm >>$GITHUB_ENV
           sudo apt-get install libxinerama-dev libxtst-dev
       - if: ${{ runner.os == 'macOS' }}
         run: |
-          echo ::set-env name=NVM_HOME::$HOME/.nvm
-          echo ::set-env name=PYTHON::/usr/local/bin/python
+          echo NVM_HOME=$HOME/.nvm >>$GITHUB_ENV
+          echo PYTHON=/usr/local/bin/python >>$GITHUB_ENV
       - uses: actions/checkout@v1
         with: 
           submodules: recursive
@@ -102,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          echo ::set-env name=NPM_CACHE::$HOME/.npm
+          echo NPM_CACHE=$HOME/.npm >>$GITHUB_ENV
       - uses: actions/cache@v1
         with:
           path: ${{ env.NPM_CACHE }}
