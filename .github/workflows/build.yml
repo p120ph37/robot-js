@@ -44,10 +44,10 @@ jobs:
       - if: ${{ runner.os == 'Windows' }}
         shell: powershell
         run: |
-          echo "NVM_HOME=${ProgramData}\nvm" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "NVM_SYMLINK=${ProgramFiles}\nodejs" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "${ProgramData}\nvm" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          Remove-Item ${ProgramFiles}\nodejs -Recurse -Force
+          echo NVM_HOME=$env:ProgramData\nvm | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo NVM_SYMLINK=$env:ProgramFiles\nodejs | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo $env:ProgramData\nvm | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Remove-Item $env:ProgramFiles\nodejs -Recurse -Force -ErrorAction SilentlyContinue
       - if: ${{ runner.os == 'Windows' }}
         uses: actions/cache@v1
         with:
