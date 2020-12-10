@@ -8,29 +8,29 @@ jobs:
       matrix:
         os:
           - windows-2019
-#          - ubuntu-18.04
-#          - macos-10.15
+          - ubuntu-18.04
+          - macos-10.15
         arch:
-#          - 64
+          - 64
           - 32
         runtime_target:
-#          - node-14.4.0
-#          - node-13.12.0
-#          - node-12.18.1
-#          - node-11.15.0
-#          - node-10.21.0
-#          - node-9.11.2
-#          - node-8.17.0
-#          - electron-9.3.5
-#          - electron-9.2.1
-#          - electron-9.1.2
+          - node-14.4.0
+          - node-13.12.0
+          - node-12.18.1
+          - node-11.15.0
+          - node-10.21.0
+          - node-9.11.2
+          - node-8.17.0
+          - electron-9.3.5
+          - electron-9.2.1
+          - electron-9.1.2
           - electron-9.0.5
-#          - electron-8.5.5
-#          - electron-8.4.1
-#          - electron-8.3.4
-#          - electron-8.2.5
-#          - electron-8.1.1
-#          - electron-8.0.3
+          - electron-8.5.5
+          - electron-8.4.1
+          - electron-8.3.4
+          - electron-8.2.5
+          - electron-8.1.1
+          - electron-8.0.3
         exclude:
           - os: ubuntu-18.04
             arch: 32
