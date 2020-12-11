@@ -21,7 +21,6 @@ jobs:
           - node-10.21.0
           - node-9.11.2
           - node-8.17.0
-          - electron-11.0.4
           - electron-10.1.7
           - electron-10.0.1
           - electron-9.3.5
