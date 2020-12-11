@@ -71,7 +71,7 @@
 		"package_name": "{platform}-{arch}-{node_abi}.tar.gz"
 	},
 	"dependencies": {
-		"node-pre-gyp": "^0.15.0"
+		"node-pre-gyp": "^0.17.0"
 	},
 	"devDependencies": {
 		"@octokit/rest": "^18.0.0",
