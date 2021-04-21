@@ -64,7 +64,7 @@ jobs:
           submodules: recursive
       - env:
           RUNTIME_TARGET: ${{ matrix.runtime_target }}
-          ARCH: ${{ matrix.arch }}
+          ARCH: ${{ runner.os == 'Windows' && matrix.arch || '' }}
         run: |
           [ -e "$NVM_HOME/nvm.sh" ] || which nvm || choco install nvm
           [ -e "$NVM_HOME/nvm.sh" ] && . "$NVM_HOME/nvm.sh"
