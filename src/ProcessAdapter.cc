@@ -1,0 +1,119 @@
+#include "ProcessAdapter.h"
+#include "ModuleAdapter.h"
+#include "WindowAdapter.h"
+
+Napi::Function ProcessAdapter::Init(Napi::Env env) {
+  return DefineClass(env, "Process", {
+    InstanceMethod("open", &ProcessAdapter::open),
+    InstanceMethod("close", &ProcessAdapter::close),
+    InstanceMethod("isValid", &ProcessAdapter::isValid),
+    InstanceMethod("is64Bit", &ProcessAdapter::is64Bit),
+    InstanceMethod("isDebugged", &ProcessAdapter::isDebugged),
+    InstanceMethod("getPID", &ProcessAdapter::getPID),
+    InstanceMethod("getName", &ProcessAdapter::getName),
+    InstanceMethod("getPath", &ProcessAdapter::getPath),
+    InstanceMethod("exit", &ProcessAdapter::exit),
+    InstanceMethod("kill", &ProcessAdapter::kill),
+    InstanceMethod("hasExited", &ProcessAdapter::hasExited),
+    InstanceMethod("getModules", &ProcessAdapter::getModules),
+    InstanceMethod("getWindows", &ProcessAdapter::getWindows),
+    StaticMethod("getList", &ProcessAdapter::getList),
+    StaticMethod("getCurrent", &ProcessAdapter::getCurrent),
+    StaticMethod("isSys64Bit", &ProcessAdapter::isSys64Bit),
+  });
+}
+
+ProcessAdapter::ProcessAdapter(const Napi::CallbackInfo& info) : ClassAdapterEq(info) {
+  if(WrapAdaptee(info, adaptee)) return;
+  if(IsInstance(info[0])) {
+    adaptee = Unwrap(info[0])->adaptee;
+    return;
+  }
+  if(info[0].IsUndefined()) {
+    adaptee = Robot::Process();
+    return;
+  }
+  adaptee = Robot::Process(info[0].ToNumber());
+}
+
+Napi::Value ProcessAdapter::open(const Napi::CallbackInfo& info) {
+  return Napi::Boolean::New(env, adaptee.Open(info[0].ToNumber()));
+}
+
+void ProcessAdapter::close(const Napi::CallbackInfo& info) {
+  adaptee.Close();
+}
+
+Napi::Value ProcessAdapter::isValid(const Napi::CallbackInfo& info) {
+  return Napi::Boolean::New(env, adaptee.IsValid());
+}
+
+Napi::Value ProcessAdapter::is64Bit(const Napi::CallbackInfo& info) {
+  return Napi::Boolean::New(env, adaptee.Is64Bit());
+}
+
+Napi::Value ProcessAdapter::isDebugged(const Napi::CallbackInfo& info) {
+  return Napi::Boolean::New(env, adaptee.IsDebugged());
+}
+
+Napi::Value ProcessAdapter::getPID(const Napi::CallbackInfo& info) {
+  return Napi::Number::New(env, adaptee.GetPID());
+}
+
+Napi::Value ProcessAdapter::getName(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env, adaptee.GetName());
+}
+
+Napi::Value ProcessAdapter::getPath(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env, adaptee.GetPath());
+}
+
+void ProcessAdapter::exit(const Napi::CallbackInfo& info) {
+  adaptee.Exit();
+}
+
+void ProcessAdapter::kill(const Napi::CallbackInfo& info) {
+  adaptee.Kill();
+}
+
+Napi::Value ProcessAdapter::hasExited(const Napi::CallbackInfo& info) {
+  return Napi::Boolean::New(env, adaptee.HasExited());
+}
+
+Napi::Value ProcessAdapter::getModules(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
+  auto modules = info[0].IsUndefined() ? adaptee.GetModules() : adaptee.GetModules(info[0].ToString().Utf8Value().c_str());
+  auto arr = Napi::Array::New(env, modules.size());
+  for(size_t i = 0; i < modules.size(); i++) {
+    arr[i] = ModuleAdapter::New(env, modules[i]);
+  }
+  return arr;
+}
+
+Napi::Value ProcessAdapter::getWindows(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
+  auto windows = info[0].IsUndefined() ? adaptee.GetWindows() : adaptee.GetWindows(info[0].ToString().Utf8Value().c_str());
+  auto arr = Napi::Array::New(env, windows.size());
+  for(size_t i = 0; i < windows.size(); i++) {
+    arr[i] = WindowAdapter::New(env, windows[i]);
+  }
+  return arr;
+}
+
+Napi::Value ProcessAdapter::getList(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
+  auto processes = Robot::Process::GetList();
+  auto arr = Napi::Array::New(env, processes.size());
+  for(size_t i = 0; i < processes.size(); i++) {
+    arr[i] = New(env, processes[i]);
+  }
+  return arr;
+}
+
+Napi::Value ProcessAdapter::getCurrent(const Napi::CallbackInfo& info) {
+  return New(info.Env(), Robot::Process::GetCurrent());
+}
+
+Napi::Value ProcessAdapter::isSys64Bit(const Napi::CallbackInfo& info) {
+  return Napi::Boolean::New(info.Env(), Robot::Process::IsSys64Bit());
+}

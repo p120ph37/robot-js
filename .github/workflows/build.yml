@@ -13,17 +13,6 @@ jobs:
         arch:
           - 64
           - 32
-        runtime_target:
-          - node-14.4.0
-          - node-13.12.0
-          - node-12.18.1
-          - node-11.15.0
-          - node-10.21.0
-          - electron-9.4.4
-          - electron-9.3.5
-          - electron-9.2.1
-          - electron-9.1.2
-          - electron-9.0.5
         exclude:
           - os: ubuntu-18.04
             arch: 32
@@ -58,7 +47,6 @@ jobs:
         with: 
           submodules: recursive
       - env:
-          RUNTIME_TARGET: ${{ matrix.runtime_target }}
           ARCH: ${{ runner.os == 'Windows' && matrix.arch || '' }}
         run: |
           [ -e "$NVM_HOME/nvm.sh" ] || which nvm || choco install nvm
@@ -66,28 +54,8 @@ jobs:
           nvm install $HOST_NODE_VERSION $ARCH
           nvm use $HOST_NODE_VERSION $ARCH && sleep 3
           npm ci --ignore-scripts
-          case $RUNTIME_TARGET in
-            node-*)
-              npm run build -- \
-                --runtime=node \
-                --target=${RUNTIME_TARGET#*-}
-              nvm install ${RUNTIME_TARGET#*-} $ARCH
-              nvm use ${RUNTIME_TARGET#*-} $ARCH && sleep 3
-              npm run test:ci:node
-              ;;
-            electron-*)
-              npm run build -- \
-                --runtime=electron \
-                --target=${RUNTIME_TARGET#*-} \
-                --dist-url=https://atom.io/download/electron
-              npm install --no-save electron@${RUNTIME_TARGET#*-}
-              if which xvfb-run; then
-                xvfb-run npm run test:ci:electron
-              else
-                npm run test:ci:electron
-              fi
-              ;;
-          esac
+          npm run build
+          npm run test:ci:node
       - uses: actions/upload-artifact@v2
         with:
           path: build/stage/*/*.tar.gz
