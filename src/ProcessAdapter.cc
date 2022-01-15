@@ -23,21 +23,13 @@ Napi::Function ProcessAdapter::Init(Napi::Env env) {
   });
 }
 
-ProcessAdapter::ProcessAdapter(const Napi::CallbackInfo& info) : ClassAdapterEq(info) {
-  if(WrapAdaptee(info, adaptee)) return;
-  if(IsInstance(info[0])) {
-    adaptee = Unwrap(info[0])->adaptee;
-    return;
-  }
-  if(info[0].IsUndefined()) {
-    adaptee = Robot::Process();
-    return;
-  }
-  adaptee = Robot::Process(info[0].ToNumber());
+ProcessAdapter::ProcessAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) {
+  if(WrapAdaptee(info) || ConstructDefault(info) || CopyThat(info)) return;
+  adaptee = Robot::Process(info[0].As<Napi::Number>());
 }
 
 Napi::Value ProcessAdapter::open(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(env, adaptee.Open(info[0].ToNumber()));
+  return Napi::Boolean::New(env, adaptee.Open(info[0].As<Napi::Number>()));
 }
 
 void ProcessAdapter::close(const Napi::CallbackInfo& info) {

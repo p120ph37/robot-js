@@ -27,15 +27,7 @@ Napi::Function MemoryAdapter::Init(Napi::Env env) {
 }
 
 MemoryAdapter::MemoryAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) {
-  if(WrapAdaptee(info, adaptee)) return;
-  if(IsInstance(info[0])) {
-    adaptee = Unwrap(info[0])->adaptee;
-    return;
-  }
-  if(info[0].IsUndefined()) {
-    adaptee = Robot::Memory();
-    return;
-  }
+  if(WrapAdaptee(info) || ConstructDefault(info) || CopyThat(info)) return;
   if(ProcessAdapter::IsInstance(info[0])) {
     adaptee = Robot::Memory(ProcessAdapter::Unwrap(info[0])->adaptee);
     return;
@@ -52,17 +44,17 @@ Napi::Value MemoryAdapter::getProcess(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value MemoryAdapter::getStats(const Napi::CallbackInfo& info) {
-  return MemoryAdapter::StatsAdapter::New(env, adaptee.GetStats(info[0].IsBoolean() ? info[0].As<Napi::Boolean>() : false));
+  return MemoryAdapter::StatsAdapter::New(env, adaptee.GetStats(info[0].IsUndefined() ? false : info[0].As<Napi::Boolean>()));
 }
 
 Napi::Value MemoryAdapter::getRegion(const Napi::CallbackInfo& info) {
-  return MemoryAdapter::RegionAdapter::New(env, adaptee.GetRegion(info[0].ToNumber().Int64Value()));
+  return MemoryAdapter::RegionAdapter::New(env, adaptee.GetRegion(info[0].As<Napi::Number>().Int64Value()));
 }
 
 Napi::Value MemoryAdapter::getRegions(const Napi::CallbackInfo& info) {
   auto regions = adaptee.GetRegions(
-    info[0].IsUndefined() ? 0 : info[0].ToNumber(),
-    info[1].IsUndefined() ? -1 : info[1].ToNumber()
+    info[0].IsUndefined() ? 0 : info[0].As<Napi::Number>(),
+    info[1].IsUndefined() ? -1 : info[1].As<Napi::Number>()
   );
   auto arr = Napi::Array::New(env, regions.size());
   for(size_t i = 0; i < regions.size(); i++) {
@@ -108,9 +100,9 @@ Napi::Value MemoryAdapter::getPageSize(const Napi::CallbackInfo& info) {
 Napi::Value MemoryAdapter::find(const Napi::CallbackInfo& info) {
   auto addresses = adaptee.Find(
     info[0].ToString().Utf8Value().c_str(),
-    info[1].IsUndefined() ? 0 : info[1].ToNumber(),
-    info[2].IsUndefined() ? -1 : info[2].ToNumber(),
-    info[3].IsUndefined() ? 0 : info[3].ToNumber(),
+    info[1].IsUndefined() ? 0 : info[1].As<Napi::Number>(),
+    info[2].IsUndefined() ? -1 : info[2].As<Napi::Number>(),
+    info[3].IsUndefined() ? 0 : info[3].As<Napi::Number>(),
     info[4].IsUndefined() ? nullptr : info[4].ToString().Utf8Value().c_str()
   );
   auto arr = Napi::Array::New(env, addresses.size());
@@ -122,11 +114,11 @@ Napi::Value MemoryAdapter::find(const Napi::CallbackInfo& info) {
 
 Napi::Value MemoryAdapter::createCache(const Napi::CallbackInfo& info) {
   return Napi::Boolean::New(env, adaptee.CreateCache(
-    info[0].ToNumber().Int64Value(),
-    info[1].ToNumber().Int64Value(),
-    info[2].ToNumber().Int64Value(),
-    info[3].IsUndefined() ? 0 : info[3].ToNumber().Int64Value(),
-    info[4].IsUndefined() ? 0 : info[4].ToNumber().Int64Value()
+    info[0].As<Napi::Number>().Int64Value(),
+    info[1].As<Napi::Number>().Int64Value(),
+    info[2].As<Napi::Number>().Int64Value(),
+    info[3].IsUndefined() ? 0 : info[3].As<Napi::Number>().Int64Value(),
+    info[4].IsUndefined() ? 0 : info[4].As<Napi::Number>().Int64Value()
   ));
 }
 
@@ -151,15 +143,15 @@ Napi::Value MemoryAdapter::readData(const Napi::CallbackInfo& info) {
     throw Napi::TypeError::New(env, "Invalid arguments");
   }
   auto buffer = info[1].As<Napi::Buffer<uint8_t>>();
-  uint64_t length = info[0].ToNumber().Int64Value();
+  uint64_t length = info[0].As<Napi::Number>().Int64Value();
   if(buffer.Length() < length) {
     throw Napi::RangeError::New(env, "Buffer is too small");
   }
   return Napi::Number::New(env, adaptee.ReadData(
-    info[0].ToNumber().Int64Value(),
+    info[0].As<Napi::Number>().Int64Value(),
     buffer.Data(),
     length,
-    info[3].IsUndefined() ? Robot::Memory::Default : (Robot::Memory::Flags)(info[3].ToNumber().Int32Value())
+    info[3].IsUndefined() ? Robot::Memory::Default : (Robot::Memory::Flags)(info[3].As<Napi::Number>().Int32Value())
   ));
 }
 
@@ -262,16 +254,8 @@ Napi::Function MemoryAdapter::RegionAdapter::Init(Napi::Env env) {
   });
 }
 
-MemoryAdapter::RegionAdapter::RegionAdapter(const Napi::CallbackInfo& info) : ClassAdapterCmp(info) {
-  if(WrapAdaptee(info, adaptee)) return;
-  if(IsInstance(info[0])) {
-    adaptee = Unwrap(info[0])->adaptee;
-    return;
-  }
-  if(info[0].IsUndefined()) {
-    adaptee = Robot::Memory::Region();
-    return;
-  }
+MemoryAdapter::RegionAdapter::RegionAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) {
+  if(WrapAdaptee(info) || ConstructDefault(info) || CopyThat(info)) return;
   throw Napi::TypeError::New(env, "Invalid arguments");
 }
 
@@ -335,7 +319,7 @@ Napi::Value MemoryAdapter::RegionAdapter::access(const Napi::CallbackInfo& info)
   return Napi::Number::New(env, adaptee.Access);
 }
 void MemoryAdapter::RegionAdapter::access(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.Access = value.ToNumber();
+  adaptee.Access = value.As<Napi::Number>();
 }
 
 Napi::Value MemoryAdapter::RegionAdapter::private_(const Napi::CallbackInfo& info) {
@@ -353,7 +337,7 @@ void MemoryAdapter::RegionAdapter::guarded(const Napi::CallbackInfo& info, const
 }
 
 Napi::Value MemoryAdapter::RegionAdapter::contains(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(env, adaptee.Contains(info[0].ToNumber().Int64Value()));
+  return Napi::Boolean::New(env, adaptee.Contains(info[0].As<Napi::Number>().Int64Value()));
 }
 
 Napi::Function MemoryAdapter::StatsAdapter::Init(Napi::Env env) {
@@ -369,16 +353,8 @@ Napi::Function MemoryAdapter::StatsAdapter::Init(Napi::Env env) {
   });
 }
 
-MemoryAdapter::StatsAdapter::StatsAdapter(const Napi::CallbackInfo& info) : ClassAdapterEq(info) {
-  if(WrapAdaptee(info, adaptee)) return;
-  if(IsInstance(info[0])) {
-    adaptee = Unwrap(info[0])->adaptee;
-    return;
-  }
-  if(info[0].IsUndefined()) {
-    adaptee = Robot::Memory::Stats();
-    return;
-  }
+MemoryAdapter::StatsAdapter::StatsAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) {
+  if(WrapAdaptee(info) || ConstructDefault(info) || CopyThat(info)) return;
   throw Napi::TypeError::New(env, "Invalid arguments");
 }
 
@@ -386,40 +362,40 @@ Napi::Value MemoryAdapter::StatsAdapter::systemReads(const Napi::CallbackInfo& i
   return Napi::Number::New(env, adaptee.SystemReads);
 }
 void MemoryAdapter::StatsAdapter::systemReads(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.SystemReads = value.ToNumber();
+  adaptee.SystemReads = value.As<Napi::Number>();
 }
 
 Napi::Value MemoryAdapter::StatsAdapter::cachedReads(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.CachedReads);
 }
 void MemoryAdapter::StatsAdapter::cachedReads(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.CachedReads = value.ToNumber();
+  adaptee.CachedReads = value.As<Napi::Number>();
 }
 
 Napi::Value MemoryAdapter::StatsAdapter::systemWrites(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.SystemWrites);
 }
 void MemoryAdapter::StatsAdapter::systemWrites(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.SystemWrites = value.ToNumber();
+  adaptee.SystemWrites = value.As<Napi::Number>();
 }
 
 Napi::Value MemoryAdapter::StatsAdapter::accessWrites(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.AccessWrites);
 }
 void MemoryAdapter::StatsAdapter::accessWrites(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.AccessWrites = value.ToNumber();
+  adaptee.AccessWrites = value.As<Napi::Number>();
 }
 
 Napi::Value MemoryAdapter::StatsAdapter::readErrors(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.ReadErrors);
 }
 void MemoryAdapter::StatsAdapter::readErrors(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.ReadErrors = value.ToNumber();
+  adaptee.ReadErrors = value.As<Napi::Number>();
 }
 
 Napi::Value MemoryAdapter::StatsAdapter::writeErrors(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.WriteErrors);
 }
 void MemoryAdapter::StatsAdapter::writeErrors(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.WriteErrors = value.ToNumber();
+  adaptee.WriteErrors = value.As<Napi::Number>();
 }

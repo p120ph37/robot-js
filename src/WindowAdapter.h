@@ -1,7 +1,10 @@
 #include "ClassAdapter.h"
 #include "Robot.h"
 
-class WindowAdapter : public ClassAdapterEq<WindowAdapter, Robot::Window> {
+class WindowAdapter :
+  public ClassAdapter<WindowAdapter, Robot::Window>,
+  public ClassAdapter<WindowAdapter, Robot::Window>::Eq {
+
   public:
     static Napi::Function Init(Napi::Env env);
     
@@ -29,4 +32,5 @@ class WindowAdapter : public ClassAdapterEq<WindowAdapter, Robot::Window> {
     static Napi::Value getActive(const Napi::CallbackInfo& info);
     static void setActive(const Napi::CallbackInfo& info);
     static Napi::Value isAxEnabled(const Napi::CallbackInfo& info);
+
 };

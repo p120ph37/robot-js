@@ -1,7 +1,9 @@
 #include "ClassAdapter.h"
 #include "Robot.h"
 
-class MemoryAdapter : public ClassAdapter<MemoryAdapter, Robot::Memory> {
+class MemoryAdapter :
+  public ClassAdapter<MemoryAdapter, Robot::Memory> {
+
   public:
     static Napi::Function Init(Napi::Env env);
     
@@ -44,55 +46,64 @@ class MemoryAdapter : public ClassAdapter<MemoryAdapter, Robot::Memory> {
     Napi::Value writeBool(const Napi::CallbackInfo& info);
     Napi::Value writeString(const Napi::CallbackInfo& info);
   
-  class StatsAdapter : public ClassAdapterEq<StatsAdapter, Robot::Memory::Stats> {
-    public:
-      static Napi::Function Init(Napi::Env env);
-      
-      StatsAdapter(const Napi::CallbackInfo& info);
+    class StatsAdapter :
+      public ClassAdapter<StatsAdapter, Robot::Memory::Stats>,
+      public ClassAdapter<StatsAdapter, Robot::Memory::Stats>::Eq {
 
-      Napi::Value systemReads(const Napi::CallbackInfo& info);
-      void systemReads(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value cachedReads(const Napi::CallbackInfo& info);
-      void cachedReads(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value systemWrites(const Napi::CallbackInfo& info);
-      void systemWrites(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value accessWrites(const Napi::CallbackInfo& info);
-      void accessWrites(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value readErrors(const Napi::CallbackInfo& info);
-      void readErrors(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value writeErrors(const Napi::CallbackInfo& info);
-      void writeErrors(const Napi::CallbackInfo& info, const Napi::Value& value);
-  };
+      public:
+        static Napi::Function Init(Napi::Env env);
+        
+        StatsAdapter(const Napi::CallbackInfo& info);
 
-  class RegionAdapter : public ClassAdapterCmp<RegionAdapter, Robot::Memory::Region> {
-    public:
-      static Napi::Function Init(Napi::Env env);
-      
-      RegionAdapter(const Napi::CallbackInfo& info);
+        Napi::Value systemReads(const Napi::CallbackInfo& info);
+        void systemReads(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value cachedReads(const Napi::CallbackInfo& info);
+        void cachedReads(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value systemWrites(const Napi::CallbackInfo& info);
+        void systemWrites(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value accessWrites(const Napi::CallbackInfo& info);
+        void accessWrites(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value readErrors(const Napi::CallbackInfo& info);
+        void readErrors(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value writeErrors(const Napi::CallbackInfo& info);
+        void writeErrors(const Napi::CallbackInfo& info, const Napi::Value& value);
 
-      Napi::Value valid(const Napi::CallbackInfo& info);
-      void valid(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value bound(const Napi::CallbackInfo& info);
-      void bound(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value start(const Napi::CallbackInfo& info);
-      void start(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value stop(const Napi::CallbackInfo& info);
-      void stop(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value size(const Napi::CallbackInfo& info);
-      void size(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value readable(const Napi::CallbackInfo& info);
-      void readable(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value writable(const Napi::CallbackInfo& info);
-      void writable(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value executable(const Napi::CallbackInfo& info);
-      void executable(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value access(const Napi::CallbackInfo& info);
-      void access(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value private_(const Napi::CallbackInfo& info);
-      void private_(const Napi::CallbackInfo& info, const Napi::Value& value);
-      Napi::Value guarded(const Napi::CallbackInfo& info);
-      void guarded(const Napi::CallbackInfo& info, const Napi::Value& value);
+    };
 
-      Napi::Value contains(const Napi::CallbackInfo& info);
-  };
+    class RegionAdapter :
+      public ClassAdapter<RegionAdapter, Robot::Memory::Region>,
+      public ClassAdapter<RegionAdapter, Robot::Memory::Region>::Eq,
+      public ClassAdapter<RegionAdapter, Robot::Memory::Region>::Cmp {
+
+      public:
+        static Napi::Function Init(Napi::Env env);
+        
+        RegionAdapter(const Napi::CallbackInfo& info);
+
+        Napi::Value valid(const Napi::CallbackInfo& info);
+        void valid(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value bound(const Napi::CallbackInfo& info);
+        void bound(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value start(const Napi::CallbackInfo& info);
+        void start(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value stop(const Napi::CallbackInfo& info);
+        void stop(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value size(const Napi::CallbackInfo& info);
+        void size(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value readable(const Napi::CallbackInfo& info);
+        void readable(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value writable(const Napi::CallbackInfo& info);
+        void writable(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value executable(const Napi::CallbackInfo& info);
+        void executable(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value access(const Napi::CallbackInfo& info);
+        void access(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value private_(const Napi::CallbackInfo& info);
+        void private_(const Napi::CallbackInfo& info, const Napi::Value& value);
+        Napi::Value guarded(const Napi::CallbackInfo& info);
+        void guarded(const Napi::CallbackInfo& info, const Napi::Value& value);
+
+        Napi::Value contains(const Napi::CallbackInfo& info);
+    };
+
 };

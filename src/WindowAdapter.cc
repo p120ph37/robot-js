@@ -24,6 +24,7 @@ Napi::Function WindowAdapter::Init(Napi::Env env) {
     InstanceMethod("setClient", &WindowAdapter::setClient),
     InstanceMethod("mapToClient", &WindowAdapter::mapToClient),
     InstanceMethod("mapToScreen", &WindowAdapter::mapToScreen),
+    // TODO:: list eq/ne?
     StaticMethod("getList", &WindowAdapter::getList),
     StaticMethod("getActive", &WindowAdapter::getActive),
     StaticMethod("setActive", &WindowAdapter::setActive),
@@ -31,17 +32,9 @@ Napi::Function WindowAdapter::Init(Napi::Env env) {
   });
 }
 
-WindowAdapter::WindowAdapter(const Napi::CallbackInfo& info) : ClassAdapterEq(info) {
-  if(WrapAdaptee(info, adaptee)) return;
-  if(IsInstance(info[0])) {
-    adaptee = Unwrap(info[0])->adaptee;
-    return;
-  }
-  if(info[0].IsUndefined()) {
-    adaptee = Robot::Window();
-    return;
-  }
-  adaptee = Robot::Window((Robot::uintptr)info[0].ToNumber().Int64Value());
+WindowAdapter::WindowAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) {
+  if(WrapAdaptee(info) || ConstructDefault(info) || CopyThat(info)) return;
+  adaptee = Robot::Window((Robot::uintptr)info[0].As<Napi::Number>().Int64Value());
 }
 
 Napi::Value WindowAdapter::isValid(const Napi::CallbackInfo& info) {
@@ -81,7 +74,7 @@ Napi::Value WindowAdapter::getHandle(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value WindowAdapter::setHandle(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(env, adaptee.SetHandle(info[0].ToNumber().Int64Value()));
+  return Napi::Boolean::New(env, adaptee.SetHandle(info[0].As<Napi::Number>().Int64Value()));
 }
 
 Napi::Value WindowAdapter::getTitle(const Napi::CallbackInfo& info) {
@@ -97,7 +90,7 @@ Napi::Value WindowAdapter::getBounds(const Napi::CallbackInfo& info) {
 }
 
 void WindowAdapter::setBounds(const Napi::CallbackInfo& info) {
-  adaptee.SetBounds(BoundsAdapter(info).adaptee);
+  adaptee.SetBounds(BoundsAdapter::NewAdaptee(info));
 }
 
 Napi::Value WindowAdapter::getClient(const Napi::CallbackInfo& info) {
@@ -105,15 +98,15 @@ Napi::Value WindowAdapter::getClient(const Napi::CallbackInfo& info) {
 }
 
 void WindowAdapter::setClient(const Napi::CallbackInfo& info) {
-  adaptee.SetClient(BoundsAdapter(info).adaptee);
+  adaptee.SetClient(BoundsAdapter::NewAdaptee(info));
 }
 
 Napi::Value WindowAdapter::mapToClient(const Napi::CallbackInfo& info) {
-  return PointAdapter::New(env, adaptee.MapToClient(PointAdapter(info).adaptee));
+  return PointAdapter::New(env, adaptee.MapToClient(PointAdapter::NewAdaptee(info)));
 }
 
 Napi::Value WindowAdapter::mapToScreen(const Napi::CallbackInfo& info) {
-  return PointAdapter::New(env, adaptee.MapToScreen(PointAdapter(info).adaptee));
+  return PointAdapter::New(env, adaptee.MapToScreen(PointAdapter::NewAdaptee(info)));
 }
 
 Napi::Value WindowAdapter::getList(const Napi::CallbackInfo& info) {

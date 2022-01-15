@@ -1,13 +1,13 @@
 #include "ClassAdapter.h"
 #include "Robot.h"
 
-class KeyboardAdapter :
-  public ClassAdapter<KeyboardAdapter, Robot::Keyboard> {
+class MouseAdapter :
+  public ClassAdapter<MouseAdapter, Robot::Mouse> {
 
   public:
     static Napi::Function Init(Napi::Env env);
     
-    KeyboardAdapter(const Napi::CallbackInfo& info);
+    MouseAdapter(const Napi::CallbackInfo& info);
 
     Napi::Value autoDelay(const Napi::CallbackInfo& info);
     void autoDelay(const Napi::CallbackInfo& info, const Napi::Value& value);
@@ -15,7 +15,10 @@ class KeyboardAdapter :
     void click(const Napi::CallbackInfo& info);
     void press(const Napi::CallbackInfo& info);
     void release(const Napi::CallbackInfo& info);
-    static Napi::Value compile(const Napi::CallbackInfo& info);
+    void scrollH(const Napi::CallbackInfo& info);
+    void scrollV(const Napi::CallbackInfo& info);
+    static Napi::Value getPos(const Napi::CallbackInfo& info);
+    static void setPos(const Napi::CallbackInfo& info);
     static Napi::Value getState(const Napi::CallbackInfo& info);
 
 };

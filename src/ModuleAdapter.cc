@@ -19,17 +19,9 @@ Napi::Function ModuleAdapter::Init(Napi::Env env) {
   });
 }
 
-ModuleAdapter::ModuleAdapter(const Napi::CallbackInfo& info) : ClassAdapterCmp(info) {
-  if(WrapAdaptee(info, adaptee)) return;
-  if(IsInstance(info[0])) {
-    adaptee = Unwrap(info[0])->adaptee;
-    return;
-  }
-  if(info[0].IsUndefined()) {
-    adaptee = Robot::Module();
-    return;
-  }
-  NAPI_THROW(Napi::TypeError::New(env, "Invalid arguments"), env.Null());
+ModuleAdapter::ModuleAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) {
+  if(WrapAdaptee(info) || ConstructDefault(info) || CopyThat(info)) return;
+  throw Napi::TypeError::New(env, "Invalid arguments");
 }
 
 Napi::Value ModuleAdapter::valid(const Napi::CallbackInfo& info) {
@@ -57,5 +49,5 @@ Napi::Value ModuleAdapter::process(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value ModuleAdapter::contains(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(env, adaptee.Contains(info[0].ToNumber().Int64Value()));
+  return Napi::Boolean::New(env, adaptee.Contains(info[0].As<Napi::Number>().Int64Value()));
 }

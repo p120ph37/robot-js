@@ -1,7 +1,9 @@
 #include "ClassAdapter.h"
 #include "Robot.h"
 
-class HashAdapter : public ClassAdapterEq<HashAdapter, Robot::Hash> {
+class HashAdapter :
+  public ClassAdapter<HashAdapter, Robot::Hash> {
+
   public:
     static Napi::Function Init(Napi::Env env);
     
@@ -11,4 +13,8 @@ class HashAdapter : public ClassAdapterEq<HashAdapter, Robot::Hash> {
     void result(const Napi::CallbackInfo& info, const Napi::Value& value);
 
     void append(const Napi::CallbackInfo& info);
+
+    Napi::Value eq(const Napi::CallbackInfo& info);
+    Napi::Value ne(const Napi::CallbackInfo& info);
+
 };

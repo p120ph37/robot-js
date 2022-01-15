@@ -3,9 +3,11 @@
 
 Napi::Function SizeAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Size", {
+    StaticMethod("normalize", &SizeAdapter::normalize),
     InstanceAccessor("w", &SizeAdapter::w, &SizeAdapter::w),
     InstanceAccessor("h", &SizeAdapter::h, &SizeAdapter::h),
     InstanceMethod("isZero", &SizeAdapter::isZero),
+    InstanceMethod("isEmpty", &SizeAdapter::isEmpty),
     InstanceMethod("toPoint", &SizeAdapter::toPoint),
     InstanceMethod("add", &SizeAdapter::add),
     InstanceMethod("sub", &SizeAdapter::sub),
@@ -14,44 +16,47 @@ Napi::Function SizeAdapter::Init(Napi::Env env) {
   });
 }
 
-SizeAdapter::SizeAdapter(const Napi::CallbackInfo& info) : ClassAdapterEq(info) {
-  if(WrapAdaptee(info, adaptee)) return;
-  if(IsInstance(info[0])) {
-    adaptee = Unwrap(info[0])->adaptee;
-    return;
-  }
-  if(info[0].IsUndefined()) {
-    adaptee = Robot::Size();
-    return;
-  }
+SizeAdapter::SizeAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) {
+  if(WrapAdaptee(info) || ConstructDefault(info) || CopyThat(info)) return;
   if(info[0].IsObject()) {
     auto o = info[0].As<Napi::Object>();
-    adaptee = Robot::Size(o.Get("w").ToNumber(), o.Get("h").ToNumber());
+    adaptee = Robot::Size(o.Get("w").As<Napi::Number>(), o.Get("h").As<Napi::Number>());
     return;
   }
   if(!info[1].IsUndefined()) {
-    adaptee = Robot::Size(info[0].ToNumber(), info[1].ToNumber());
+    adaptee = Robot::Size(info[0].As<Napi::Number>(), info[1].As<Napi::Number>());
     return;
   } 
-  adaptee = Robot::Size(info[0].ToNumber());
+  adaptee = Robot::Size(info[0].As<Napi::Number>());
+}
+
+Napi::Value SizeAdapter::normalize(const Napi::CallbackInfo& info) {
+  auto o = Napi::Object::New(info.Env());
+  auto s = NewAdaptee(info);
+  o["w"] = s.W; o["h"] = s.H;
+  return o;
 }
 
 Napi::Value SizeAdapter::w(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.W);
 }
 void SizeAdapter::w(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.W = value.ToNumber();
+  adaptee.W = value.As<Napi::Number>();
 }
 
 Napi::Value SizeAdapter::h(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.H);
 }
 void SizeAdapter::h(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.H = value.ToNumber();
+  adaptee.H = value.As<Napi::Number>();
 }
 
 Napi::Value SizeAdapter::isZero(const Napi::CallbackInfo& info) {
   return Napi::Boolean::New(env, adaptee.IsZero());
+}
+
+Napi::Value SizeAdapter::isEmpty(const Napi::CallbackInfo& info) {
+  return Napi::Boolean::New(env, adaptee.IsEmpty());
 }
 
 Napi::Value SizeAdapter::toPoint(const Napi::CallbackInfo& info) {
@@ -59,9 +64,9 @@ Napi::Value SizeAdapter::toPoint(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value SizeAdapter::add(const Napi::CallbackInfo& info) {
-  return New(env, adaptee + SizeAdapter(info).adaptee);
+  return New(env, adaptee + NewAdaptee(info));
 }
 
 Napi::Value SizeAdapter::sub(const Napi::CallbackInfo& info) {
-  return New(env, adaptee - SizeAdapter(info).adaptee);
+  return New(env, adaptee - NewAdaptee(info));
 }

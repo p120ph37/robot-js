@@ -1,11 +1,16 @@
 #include "ClassAdapter.h"
 #include "Robot.h"
 
-class BoundsAdapter : public ClassAdapterEq<BoundsAdapter, Robot::Bounds> {
+class BoundsAdapter :
+  public ClassAdapter<BoundsAdapter, Robot::Bounds>,
+  public ClassAdapter<BoundsAdapter, Robot::Bounds>::Eq {
+
   public:
     static Napi::Function Init(Napi::Env env);
     
     BoundsAdapter(const Napi::CallbackInfo& info);
+
+    static Napi::Value normalize(const Napi::CallbackInfo& info);
 
     Napi::Value x(const Napi::CallbackInfo& info);
     void x(const Napi::CallbackInfo& info, const Napi::Value& value);
@@ -29,7 +34,7 @@ class BoundsAdapter : public ClassAdapterEq<BoundsAdapter, Robot::Bounds> {
     void setBottom(const Napi::CallbackInfo& info);
     Napi::Value getLTRB(const Napi::CallbackInfo& info);
     void setLTRB(const Napi::CallbackInfo& info);
-    void normalize(const Napi::CallbackInfo& info);
+    void normalizeSelf(const Napi::CallbackInfo& info);
     Napi::Value containsP(const Napi::CallbackInfo& info);
     Napi::Value containsB(const Napi::CallbackInfo& info);
     Napi::Value intersects(const Napi::CallbackInfo& info);
@@ -41,4 +46,5 @@ class BoundsAdapter : public ClassAdapterEq<BoundsAdapter, Robot::Bounds> {
     void setCenter(const Napi::CallbackInfo& info);
     Napi::Value unite(const Napi::CallbackInfo& info);
     Napi::Value intersect(const Napi::CallbackInfo& info);
+    
  };

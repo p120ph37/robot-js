@@ -3,6 +3,7 @@
 
 Napi::Function PointAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Point", {
+    StaticMethod("normalize", &PointAdapter::normalize),
     InstanceAccessor("x", &PointAdapter::x, &PointAdapter::x),
     InstanceAccessor("y", &PointAdapter::y, &PointAdapter::y),
     InstanceMethod("isZero", &PointAdapter::isZero),
@@ -15,40 +16,39 @@ Napi::Function PointAdapter::Init(Napi::Env env) {
   });
 }
 
-PointAdapter::PointAdapter(const Napi::CallbackInfo& info) : ClassAdapterEq(info) {
-  if(WrapAdaptee(info, adaptee)) return;
-  if(IsInstance(info[0])) {
-    adaptee = Unwrap(info[0])->adaptee;
-    return;
-  }
-  if(info[0].IsUndefined()) {
-    adaptee = Robot::Point();
-    return;
-  }
+PointAdapter::PointAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) {
+  if(WrapAdaptee(info) || ConstructDefault(info) || CopyThat(info)) return;
   if(info[0].IsObject()) {
     auto o = info[0].As<Napi::Object>();
-    adaptee = Robot::Point(o.Get("x").ToNumber(), o.Get("y").ToNumber());
+    adaptee = Robot::Point(o.Get("x").As<Napi::Number>(), o.Get("y").As<Napi::Number>());
     return;
   }
   if(!info[1].IsUndefined()) {
-    adaptee = Robot::Point(info[0].ToNumber(), info[1].ToNumber());
+    adaptee = Robot::Point(info[0].As<Napi::Number>(), info[1].As<Napi::Number>());
     return;
   } 
-  adaptee = Robot::Point(info[0].ToNumber());
+  adaptee = Robot::Point(info[0].As<Napi::Number>());
+}
+
+Napi::Value PointAdapter::normalize(const Napi::CallbackInfo& info) {
+  auto o = Napi::Object::New(info.Env());
+  auto p = NewAdaptee(info);
+  o["x"] = p.X; o["y"] = p.Y;
+  return o;
 }
 
 Napi::Value PointAdapter::x(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.X);
 }
 void PointAdapter::x(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.X = value.ToNumber();
+  adaptee.X = value.As<Napi::Number>();
 }
 
 Napi::Value PointAdapter::y(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.Y);
 }
 void PointAdapter::y(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.Y = value.ToNumber();
+  adaptee.Y = value.As<Napi::Number>();
 }
 
 Napi::Value PointAdapter::isZero(const Napi::CallbackInfo& info) {
@@ -60,11 +60,11 @@ Napi::Value PointAdapter::toSize(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value PointAdapter::add(const Napi::CallbackInfo& info) {
-  return New(env, adaptee + PointAdapter(info).adaptee);
+  return New(env, adaptee + NewAdaptee(info));
 }
 
 Napi::Value PointAdapter::sub(const Napi::CallbackInfo& info) {
-  return New(env, adaptee - PointAdapter(info).adaptee);
+  return New(env, adaptee - NewAdaptee(info));
 }
 
 Napi::Value PointAdapter::neg(const Napi::CallbackInfo& info) {

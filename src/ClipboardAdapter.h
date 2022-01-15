@@ -1,6 +1,7 @@
 #include <napi.h>
 
 namespace ClipboardAdapter {
+
   Napi::Object Init(Napi::Env env);
 
   Napi::Value clear(const Napi::CallbackInfo& info);
@@ -11,4 +12,5 @@ namespace ClipboardAdapter {
   Napi::Value getImage(const Napi::CallbackInfo& info);
   Napi::Value setImage(const Napi::CallbackInfo& info);
   Napi::Value getSequence(const Napi::CallbackInfo& info);
+
 };

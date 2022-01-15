@@ -23,15 +23,7 @@ Napi::Function ScreenAdapter::Init(Napi::Env env) {
 }
 
 ScreenAdapter::ScreenAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) {
-  if(WrapAdaptee(info, adaptee)) return;
-  if(IsInstance(info[0])) {
-    adaptee = Unwrap(info[0])->adaptee;
-    return;
-  }
-  if(info[0].IsUndefined()) {
-    adaptee = Robot::Screen();
-    return;
-  }
+  if(WrapAdaptee(info) || ConstructDefault(info) || CopyThat(info)) return;
   if(BoundsAdapter::IsInstance(info[0]) && BoundsAdapter::IsInstance(info[1])) {
     adaptee = Robot::Screen(BoundsAdapter::Unwrap(info[0])->adaptee, BoundsAdapter::Unwrap(info[1])->adaptee);
     return;
@@ -60,7 +52,9 @@ Napi::Value ScreenAdapter::synchronize(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value ScreenAdapter::getMain(const Napi::CallbackInfo& info) {
-  return New(info.Env(), *Robot::Screen::GetMain());
+  auto env = info.Env();
+  auto screen = Robot::Screen::GetMain();
+  return screen == nullptr ? env.Null() : New(env, *screen);
 }
 
 Napi::Value ScreenAdapter::getList(const Napi::CallbackInfo& info) {
@@ -76,9 +70,11 @@ Napi::Value ScreenAdapter::getList(const Napi::CallbackInfo& info) {
 Napi::Value ScreenAdapter::getScreen(const Napi::CallbackInfo& info) {
   auto env = info.Env();
   if(WindowAdapter::IsInstance(info[0])) {
-    return New(env, *Robot::Screen::GetScreen(WindowAdapter::Unwrap(info[0])->adaptee));
+    auto screen = Robot::Screen::GetScreen(WindowAdapter::Unwrap(info[0])->adaptee);
+    return screen == nullptr ? env.Null() : New(env, *screen);
   }
-  return New(env, *Robot::Screen::GetScreen(PointAdapter(info).adaptee));
+  auto screen = Robot::Screen::GetScreen(PointAdapter::NewAdaptee(info));
+  return screen == nullptr ? env.Null() : New(env, *screen);
 }
 
 Napi::Value ScreenAdapter::grabScreen(const Napi::CallbackInfo& info) {
@@ -86,11 +82,12 @@ Napi::Value ScreenAdapter::grabScreen(const Napi::CallbackInfo& info) {
   if(!ImageAdapter::IsInstance(info[0])) {
     throw Napi::TypeError::New(env, "Invalid arguments");
   }
+  ImageAdapter::Unwrap(info[0])->destroy(info); // Can't reuse the underlying buffers due to V8 stuff.
   return Napi::Boolean::New(env, Robot::Screen::GrabScreen(
-      ImageAdapter::Unwrap(info[0])->adaptee,
+      *ImageAdapter::Unwrap(info[0])->adaptee.get(),
       BoundsAdapter::IsInstance(info[1]) ?
         BoundsAdapter::Unwrap(info[1])->adaptee :
-        BoundsAdapter::Unwrap(BoundsAdapter::GetConstructor(env).New({info[1], info[2], info[3], info[4]}))->adaptee,
+        BoundsAdapter::NewAdaptee(env, {info[1], info[2], info[3], info[4]}),
       info[2].IsUndefined() ? Robot::Window() : WindowAdapter::Unwrap(info[2])->adaptee
   ));
 }

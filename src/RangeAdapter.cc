@@ -2,6 +2,7 @@
 
 Napi::Function RangeAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Range", {
+    StaticMethod("normalize", &RangeAdapter::normalize),
     InstanceAccessor("min", &RangeAdapter::min, &RangeAdapter::min),
     InstanceAccessor("max", &RangeAdapter::max, &RangeAdapter::max),
     InstanceMethod("getRange", &RangeAdapter::getRange),
@@ -13,40 +14,39 @@ Napi::Function RangeAdapter::Init(Napi::Env env) {
   });
 }
 
-RangeAdapter::RangeAdapter(const Napi::CallbackInfo& info) : ClassAdapterEq(info) {
-  if(WrapAdaptee(info, adaptee)) return;
-  if(IsInstance(info[0])) {
-    adaptee = Unwrap(info[0])->adaptee;
-    return;
-  }
-  if(info[0].IsUndefined()) {
-    adaptee = Robot::Range();
-    return;
-  }
+RangeAdapter::RangeAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) {
+  if(WrapAdaptee(info) || ConstructDefault(info) || CopyThat(info)) return;
   if(info[0].IsObject()) {
     auto o = info[0].As<Napi::Object>();
-    adaptee = Robot::Range(o.Get("min").ToNumber(), o.Get("max").ToNumber());
+    adaptee = Robot::Range(o.Get("min").As<Napi::Number>(), o.Get("max").As<Napi::Number>());
     return;
   }
   if(!info[1].IsUndefined()) {
-    adaptee = Robot::Range(info[0].ToNumber(), info[1].ToNumber());
+    adaptee = Robot::Range(info[0].As<Napi::Number>(), info[1].As<Napi::Number>());
     return;
   } 
-  adaptee = Robot::Range(info[0].ToNumber());
+  adaptee = Robot::Range(info[0].As<Napi::Number>());
+}
+
+Napi::Value RangeAdapter::normalize(const Napi::CallbackInfo& info) {
+  auto o = Napi::Object::New(info.Env());
+  auto r = NewAdaptee(info);
+  o["min"] = r.Min; o["max"] = r.Max;
+  return o;
 }
 
 Napi::Value RangeAdapter::min(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.Min);
 }
 void RangeAdapter::min(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.Min = value.ToNumber();
+  adaptee.Min = value.As<Napi::Number>();
 }
 
 Napi::Value RangeAdapter::max(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.Max);
 }
 void RangeAdapter::max(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.Max = value.ToNumber();
+  adaptee.Max = value.As<Napi::Number>();
 }
 
 Napi::Value RangeAdapter::getRange(const Napi::CallbackInfo& info) {
@@ -54,13 +54,13 @@ Napi::Value RangeAdapter::getRange(const Napi::CallbackInfo& info) {
 }
 
 void RangeAdapter::setRange(const Napi::CallbackInfo& info) {
-  adaptee = RangeAdapter(info).adaptee;
+  adaptee = NewAdaptee(info);
 }
 
 Napi::Value RangeAdapter::contains(const Napi::CallbackInfo& info) {
   return Napi::Boolean::New(env, adaptee.Contains(
-    info[0].ToNumber(),
-    info[1].IsBoolean() ? info[1].As<Napi::Boolean>() : true
+    info[0].As<Napi::Number>(),
+    info[1].IsUndefined() ? true : info[1].As<Napi::Boolean>()
   ));
 }
 

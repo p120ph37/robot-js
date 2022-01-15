@@ -42,13 +42,15 @@ Napi::Value ClipboardAdapter::hasImage(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value ClipboardAdapter::getImage(const Napi::CallbackInfo& info) {
-  Robot::Image image = ImageAdapter::Unwrap(info[0])->adaptee;
-  return Napi::Boolean::New(info.Env(), Robot::Clipboard::GetImage(image));
+  ImageAdapter::Unwrap(info[0])->destroy(info); // Can't reuse the underlying buffers due to V8 stuff.
+  return Napi::Boolean::New(info.Env(), Robot::Clipboard::GetImage(
+    *ImageAdapter::Unwrap(info[0])->adaptee.get()
+  ));
 }
 
 Napi::Value ClipboardAdapter::setImage(const Napi::CallbackInfo& info) {
   return Napi::Boolean::New(info.Env(), Robot::Clipboard::SetImage(
-    ImageAdapter::Unwrap(info[0])->adaptee
+    *ImageAdapter::Unwrap(info[0])->adaptee.get()
   ));
 }
 

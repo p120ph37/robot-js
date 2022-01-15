@@ -1,11 +1,16 @@
 #include "ClassAdapter.h"
 #include "Robot.h"
 
-class PointAdapter : public ClassAdapterEq<PointAdapter, Robot::Point> {
+class PointAdapter :
+  public ClassAdapter<PointAdapter, Robot::Point>,
+  public ClassAdapter<PointAdapter, Robot::Point>::Eq {
+
   public:
     static Napi::Function Init(Napi::Env env);
     
     PointAdapter(const Napi::CallbackInfo& info);
+
+    static Napi::Value normalize(const Napi::CallbackInfo& info);
 
     Napi::Value x(const Napi::CallbackInfo& info);
     void x(const Napi::CallbackInfo& info, const Napi::Value& value);
@@ -17,4 +22,5 @@ class PointAdapter : public ClassAdapterEq<PointAdapter, Robot::Point> {
     Napi::Value add(const Napi::CallbackInfo& info);
     Napi::Value sub(const Napi::CallbackInfo& info);
     Napi::Value neg(const Napi::CallbackInfo& info);
+
  };

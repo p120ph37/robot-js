@@ -1,7 +1,9 @@
 #include "ClassAdapter.h"
 #include "Robot.h"
 
-class ScreenAdapter : public ClassAdapter<ScreenAdapter, Robot::Screen> {
+class ScreenAdapter :
+  public ClassAdapter<ScreenAdapter, Robot::Screen> {
+
   public:
     static Napi::Function Init(Napi::Env env);
     
@@ -20,4 +22,5 @@ class ScreenAdapter : public ClassAdapter<ScreenAdapter, Robot::Screen> {
     static Napi::Value getTotalUsable(const Napi::CallbackInfo& info);
     static Napi::Value isCompositing(const Napi::CallbackInfo& info);
     static void setCompositing(const Napi::CallbackInfo& info);
+
 };

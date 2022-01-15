@@ -9,6 +9,7 @@
  */
 template <typename T>
 class EnvLocal {
+
   private:
     class MapEntry {
       public:
@@ -21,24 +22,26 @@ class EnvLocal {
       napi_delete_reference(entry->env, entry->ref);
       entry->env_local->map.erase(entry->env);
     }
-    inline void remove(napi_env env) {
-      if(this->has(env)) {
-        napi_remove_env_cleanup_hook(env, (void (*)(void *))&EnvLocal::env_cleanup_hook, &map.at(env));
-      }
-    }
+
   public:
     ~EnvLocal() {
       for(auto it : map) {
-        this->remove(it.first);
+        this->erase(it.first);
       }
     }
     inline void set(T value) {
       napi_env env = value.Env();
-      this->remove(env);
+      this->erase(env);
       napi_ref ref;
       napi_create_reference(env, value, 1, &ref);
       map[env] = {this, env, ref};
       napi_add_env_cleanup_hook(env, (void (*)(void *))&EnvLocal::env_cleanup_hook, &map[env]);
+    }
+    inline void erase(napi_env env) {
+      if(this->has(env)) {
+        napi_remove_env_cleanup_hook(env, (void (*)(void *))&EnvLocal::env_cleanup_hook, &map.at(env));
+        map.erase(env);
+      }
     }
     inline bool has(napi_env env) {
       return map.count(env) > 0;
@@ -48,4 +51,5 @@ class EnvLocal {
       napi_get_reference_value(env, map.at(env).ref, &value);
       return T(env, value);
     }
+
 };

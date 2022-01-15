@@ -1,11 +1,16 @@
 #include "ClassAdapter.h"
 #include "Robot.h"
 
-class ColorAdapter : public ClassAdapterEq<ColorAdapter, Robot::Color> {
+class ColorAdapter :
+  public ClassAdapter<ColorAdapter, Robot::Color>,
+  public ClassAdapter<ColorAdapter, Robot::Color>::Eq {
+
   public:
     static Napi::Function Init(Napi::Env env);
     
     ColorAdapter(const Napi::CallbackInfo& info);
+
+    static Napi::Value normalize(const Napi::CallbackInfo& info);
 
     Napi::Value a(const Napi::CallbackInfo& info);
     void a(const Napi::CallbackInfo& info, const Napi::Value& value);
@@ -18,4 +23,5 @@ class ColorAdapter : public ClassAdapterEq<ColorAdapter, Robot::Color> {
 
     Napi::Value getARGB(const Napi::CallbackInfo& info);
     void setARGB(const Napi::CallbackInfo& info);
+
 };

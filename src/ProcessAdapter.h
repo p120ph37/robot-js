@@ -1,7 +1,10 @@
 #include "ClassAdapter.h"
 #include "Robot.h"
 
-class ProcessAdapter : public ClassAdapterEq<ProcessAdapter, Robot::Process> {
+class ProcessAdapter :
+  public ClassAdapter<ProcessAdapter, Robot::Process>,
+  public ClassAdapter<ProcessAdapter, Robot::Process>::Eq {
+
   public:
     static Napi::Function Init(Napi::Env env);
     
@@ -23,4 +26,5 @@ class ProcessAdapter : public ClassAdapterEq<ProcessAdapter, Robot::Process> {
     static Napi::Value getList(const Napi::CallbackInfo& info);
     static Napi::Value getCurrent(const Napi::CallbackInfo& info);
     static Napi::Value isSys64Bit(const Napi::CallbackInfo& info);
+
 };

@@ -7,12 +7,15 @@ Napi::Function KeyboardAdapter::Init(Napi::Env env) {
     InstanceMethod("click", &KeyboardAdapter::click),
     InstanceMethod("press", &KeyboardAdapter::press),
     InstanceMethod("release", &KeyboardAdapter::release),
-    InstanceMethod("compile", &KeyboardAdapter::compile),
-    InstanceMethod("getState", &KeyboardAdapter::getState),
+    StaticMethod("compile", &KeyboardAdapter::compile),
+    StaticMethod("getState", &KeyboardAdapter::getState),
   });
 }
 
-KeyboardAdapter::KeyboardAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) { }
+KeyboardAdapter::KeyboardAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) {
+  if(WrapAdaptee(info) || ConstructDefault(info) || CopyThat(info)) return;
+  throw Napi::TypeError::New(env, "Invalid arguments");
+}
 
 Napi::Value KeyboardAdapter::autoDelay(const Napi::CallbackInfo& info) {
   return RangeAdapter::New(env, adaptee.AutoDelay);
@@ -30,20 +33,21 @@ void KeyboardAdapter::click(const Napi::CallbackInfo& info) {
     adaptee.Click(info[0].As<Napi::String>().Utf8Value().c_str());
     return;
   }
-  adaptee.Click((Robot::Key)info[0].ToNumber().Int32Value());
+  adaptee.Click((Robot::Key)info[0].As<Napi::Number>().Int32Value());
 }
 
 void KeyboardAdapter::press(const Napi::CallbackInfo& info) {
-  adaptee.Press((Robot::Key)info[0].ToNumber().Int32Value());
+  adaptee.Press((Robot::Key)info[0].As<Napi::Number>().Int32Value());
 }
 
 void KeyboardAdapter::release(const Napi::CallbackInfo& info) {
-  adaptee.Release((Robot::Key)info[0].ToNumber().Int32Value());
+  adaptee.Release((Robot::Key)info[0].As<Napi::Number>().Int32Value());
 }
 
 Napi::Value KeyboardAdapter::compile(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
   Robot::KeyList keys;
-  if(Robot::Keyboard::Compile(info[0].ToString().Utf8Value().c_str(), keys)) {
+  if(Robot::Keyboard::Compile(info[0].As<Napi::String>().Utf8Value().c_str(), keys)) {
     auto arr = Napi::Array::New(env, keys.size());
     for(size_t i = 0; i < keys.size(); i++) {
       auto o = Napi::Object::New(env);
@@ -57,6 +61,7 @@ Napi::Value KeyboardAdapter::compile(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value KeyboardAdapter::getState(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
   if(info[0].IsUndefined()) {
     auto o = Napi::Object::New(env);
     Robot::KeyState state;
@@ -67,5 +72,5 @@ Napi::Value KeyboardAdapter::getState(const Napi::CallbackInfo& info) {
     }
     return o;
   }
-  return Napi::Boolean::New(env, Robot::Keyboard::GetState((Robot::Key)info[0].ToNumber().Int32Value()));
+  return Napi::Boolean::New(env, Robot::Keyboard::GetState((Robot::Key)info[0].As<Napi::Number>().Int32Value()));
 }
