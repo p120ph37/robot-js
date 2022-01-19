@@ -1,5 +1,5 @@
 #include "ColorAdapter.h"
-#include <iostream>
+#include <sstream>
 
 Napi::Function ColorAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Color", {
@@ -12,6 +12,7 @@ Napi::Function ColorAdapter::Init(Napi::Env env) {
     InstanceMethod("setARGB", &ColorAdapter::setARGB),
     InstanceMethod("eq", &ColorAdapter::eq),
     InstanceMethod("ne", &ColorAdapter::ne),
+    InstanceMethod("toString", &ColorAdapter::toString),
   });
 }
 
@@ -34,12 +35,6 @@ ColorAdapter::ColorAdapter(const Napi::CallbackInfo& info) : ClassAdapter(info) 
       info[2].As<Napi::Number>().Int32Value(),
       info[3].IsUndefined() ? 255 : info[3].As<Napi::Number>().Int32Value()
     );
-    std::cout << "New color: ";
-    std::cout << "R: " << std::hex << (uint32_t)adaptee.R << " ";
-    std::cout << "G: " << std::hex << (uint32_t)adaptee.G << " ";
-    std::cout << "B: " << std::hex << (uint32_t)adaptee.B << " ";
-    std::cout << "A: " << std::hex << (uint32_t)adaptee.A << " ";
-    std::cout << "ARGB: " << std::hex << adaptee.GetARGB() << "\n";
     return;
   }
   adaptee = Robot::Color(info[0].As<Napi::Number>().Int32Value());
@@ -85,4 +80,16 @@ Napi::Value ColorAdapter::getARGB(const Napi::CallbackInfo& info) {
 }
 void ColorAdapter::setARGB(const Napi::CallbackInfo& info) {
   adaptee.SetARGB(info[0].As<Napi::Number>());
+}
+
+Napi::Value ColorAdapter::toString(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env,
+    (std::stringstream() <<
+      "[" <<
+      adaptee.R << ", " <<
+      adaptee.G << ", " <<
+      adaptee.B << ", " <<
+      adaptee.A << "]"
+    ).str()
+  );
 }

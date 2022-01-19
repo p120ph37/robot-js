@@ -27,6 +27,7 @@
         "src/robot/Source/Timer.cc",
         "src/robot/Source/Window.cc",
 
+        "src/EnvLocal.cc",
         "src/BoundsAdapter.cc",
         "src/ClipboardAdapter.cc",
         "src/ColorAdapter.cc",

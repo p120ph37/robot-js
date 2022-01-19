@@ -2,8 +2,7 @@
 #include "Robot.h"
 
 class WindowAdapter :
-  public ClassAdapter<WindowAdapter, Robot::Window>,
-  public ClassAdapter<WindowAdapter, Robot::Window>::Eq {
+  public ClassAdapter<WindowAdapter, Robot::Window>  {
 
   public:
     static Napi::Function Init(Napi::Env env);
@@ -16,6 +15,10 @@ class WindowAdapter :
     Napi::Value isBorderless(const Napi::CallbackInfo& info);
     Napi::Value isMinimized(const Napi::CallbackInfo& info);
     Napi::Value isMaximized(const Napi::CallbackInfo& info);
+    void setTopMost(const Napi::CallbackInfo& info);
+    void setBorderless(const Napi::CallbackInfo& info);
+    void setMinimized(const Napi::CallbackInfo& info);
+    void setMaximized(const Napi::CallbackInfo& info);
     Napi::Value getProcess(const Napi::CallbackInfo& info);
     Napi::Value getPID(const Napi::CallbackInfo& info);
     Napi::Value getHandle(const Napi::CallbackInfo& info);
@@ -32,5 +35,8 @@ class WindowAdapter :
     static Napi::Value getActive(const Napi::CallbackInfo& info);
     static void setActive(const Napi::CallbackInfo& info);
     static Napi::Value isAxEnabled(const Napi::CallbackInfo& info);
+
+    Napi::Value eq(const Napi::CallbackInfo& info);
+    Napi::Value ne(const Napi::CallbackInfo& info);
 
 };

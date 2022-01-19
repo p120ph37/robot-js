@@ -47,4 +47,6 @@ class BoundsAdapter :
     Napi::Value unite(const Napi::CallbackInfo& info);
     Napi::Value intersect(const Napi::CallbackInfo& info);
     
- };
+    Napi::Value toString(const Napi::CallbackInfo& info);
+
+};

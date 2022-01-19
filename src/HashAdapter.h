@@ -17,4 +17,6 @@ class HashAdapter :
     Napi::Value eq(const Napi::CallbackInfo& info);
     Napi::Value ne(const Napi::CallbackInfo& info);
 
+    Napi::Value toString(const Napi::CallbackInfo& info);
+
 };

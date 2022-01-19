@@ -4,6 +4,8 @@
 #include "ImageAdapter.h"
 #include "WindowAdapter.h"
 
+EnvLocal ScreenAdapter::env_local = {};
+
 Napi::Function ScreenAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Screen", {
     InstanceMethod("getUsable", &ScreenAdapter::getUsable),
@@ -48,33 +50,56 @@ Napi::Value ScreenAdapter::isLandscape(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value ScreenAdapter::synchronize(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(info.Env(), Robot::Screen::Synchronize());
-}
-
-Napi::Value ScreenAdapter::getMain(const Napi::CallbackInfo& info) {
   auto env = info.Env();
-  auto screen = Robot::Screen::GetMain();
-  return screen == nullptr ? env.Null() : New(env, *screen);
-}
-
-Napi::Value ScreenAdapter::getList(const Napi::CallbackInfo& info) {
-  auto env = info.Env();
+  if(Robot::Screen::Synchronize() == false) {
+    return Napi::Boolean::New(env, false);
+  }
   auto screens = Robot::Screen::GetList();
   auto arr = Napi::Array::New(env, screens.size());
   for(size_t i = 0; i < screens.size(); i++) {
     arr[i] = New(env, *screens[i]);
   }
-  return arr;
+  env_local.set(arr);
+  return Napi::Boolean::New(env, true);
+}
+
+Napi::Value ScreenAdapter::getMain(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
+  if(env_local.has(env)) {
+    return env_local.get(env)[0U];
+  }
+  return env.Null();
+}
+
+Napi::Value ScreenAdapter::getList(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
+  if(env_local.has(env)) {
+    return env_local.get(env);
+  }
+  return Napi::Array::New(env, 0);
 }
 
 Napi::Value ScreenAdapter::getScreen(const Napi::CallbackInfo& info) {
   auto env = info.Env();
+  Robot::Point p;
   if(WindowAdapter::IsInstance(info[0])) {
-    auto screen = Robot::Screen::GetScreen(WindowAdapter::Unwrap(info[0])->adaptee);
-    return screen == nullptr ? env.Null() : New(env, *screen);
+    auto w = WindowAdapter::Unwrap(info[0])->adaptee;
+    if(w.IsValid()) {
+      p = w.GetBounds().GetCenter();
+    } else {
+      return env.Null();
+    }
+  } else {
+    p = PointAdapter::NewAdaptee(info);
   }
-  auto screen = Robot::Screen::GetScreen(PointAdapter::NewAdaptee(info));
-  return screen == nullptr ? env.Null() : New(env, *screen);
+  if(env_local.has(env)) {
+    for(auto el : env_local.get(env)) {
+      if(ScreenAdapter::Unwrap(el.second)->adaptee.GetBounds().Contains(p)) {
+        return el.second;
+      }
+    }
+  }
+  return getMain(info);
 }
 
 Napi::Value ScreenAdapter::grabScreen(const Napi::CallbackInfo& info) {
@@ -83,12 +108,16 @@ Napi::Value ScreenAdapter::grabScreen(const Napi::CallbackInfo& info) {
     throw Napi::TypeError::New(env, "Invalid arguments");
   }
   ImageAdapter::Unwrap(info[0])->destroy(info); // Can't reuse the underlying buffers due to V8 stuff.
-  return Napi::Boolean::New(env, Robot::Screen::GrabScreen(
+  return Napi::Boolean::New(env, BoundsAdapter::IsInstance(info[1]) ?
+    Robot::Screen::GrabScreen(
       *ImageAdapter::Unwrap(info[0])->adaptee.get(),
-      BoundsAdapter::IsInstance(info[1]) ?
-        BoundsAdapter::Unwrap(info[1])->adaptee :
-        BoundsAdapter::NewAdaptee(env, {info[1], info[2], info[3], info[4]}),
+      BoundsAdapter::Unwrap(info[1])->adaptee,
       info[2].IsUndefined() ? Robot::Window() : WindowAdapter::Unwrap(info[2])->adaptee
+    ) :
+    Robot::Screen::GrabScreen(
+      *ImageAdapter::Unwrap(info[0])->adaptee.get(),
+      BoundsAdapter::NewAdaptee(env, {info[1], info[2], info[3], info[4]}),
+      info[5].IsUndefined() ? Robot::Window() : WindowAdapter::Unwrap(info[5])->adaptee
   ));
 }
 
@@ -105,5 +134,5 @@ Napi::Value ScreenAdapter::isCompositing(const Napi::CallbackInfo& info) {
 }
 
 void ScreenAdapter::setCompositing(const Napi::CallbackInfo& info) {
-  Robot::Screen::SetCompositing(info[0].ToBoolean());
+  Robot::Screen::SetCompositing(info[0].As<Napi::Boolean>());
 }

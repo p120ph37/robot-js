@@ -3,23 +3,29 @@
 #include "EnvLocal.h"
 #include <napi.h>
 
+namespace {
+  const char* CONSTRUCTOR = "constructor";
+  const char* ADAPTEE_SYMBOL = "adaptee_symbol";
+}
+
 template <typename T, typename A>
 class ClassAdapter : public Napi::ObjectWrap<T> {
 
   private:
-    static EnvLocal<Napi::Function> env_local_ctor;
-    static EnvLocal<Napi::Symbol> env_local_adaptee_symbol;
+    static EnvLocal env_local;
     inline static void LazyInitEnv(napi_env env) {
-      if(env_local_ctor.has(env)) return;
-      env_local_ctor.set(T::Init(env));
-      env_local_adaptee_symbol.set(Napi::Symbol::New(env, "adaptee"));
+      if(env_local.has(env)) return;
+      auto o = Napi::Object::New(env);
+      o[CONSTRUCTOR] = T::Init(env);
+      o[ADAPTEE_SYMBOL] = Napi::Symbol::New(env, ADAPTEE_SYMBOL);
+      env_local.set(o);
     }
 
   protected:
     Napi::Env env;
     // Utility function for use in constructor to allow retrieval of raw adaptee if passed internally.
     inline bool WrapAdaptee(const Napi::CallbackInfo& info) {
-      if(env_local_adaptee_symbol.get(env).StrictEquals(info[0]) && info[1].IsExternal()) {
+      if(env_local.get(env).Get(ADAPTEE_SYMBOL).StrictEquals(info[0]) && info[1].IsExternal()) {
         adaptee = *info[1].As<Napi::External<A>>().Data();
         return true;
       }
@@ -47,12 +53,12 @@ class ClassAdapter : public Napi::ObjectWrap<T> {
 //    static Napi::Function Init(napi_env env);
     inline static Napi::Function GetConstructor(napi_env env) {
       LazyInitEnv(env);
-      return env_local_ctor.get(env);
+      return env_local.get(env).Get(CONSTRUCTOR).As<Napi::Function>();
     }
     // Will only work for classes which use `if(WrapAdaptee(info)) return;` in their constructor:
     inline static Napi::Value New(napi_env env, A const &adaptee) {
       return New(env, {
-        env_local_adaptee_symbol.get(env),
+        env_local.get(env).Get(ADAPTEE_SYMBOL).As<Napi::Symbol>(),
         Napi::External<A>::New(env, (A*)&adaptee)
       });
     }
@@ -154,11 +160,11 @@ class ClassAdapter : public Napi::ObjectWrap<T> {
 };
 
 template <typename T, typename A>
-EnvLocal<Napi::Function> ClassAdapter<T, A>::env_local_ctor = {};
-template <typename T, typename A>
-EnvLocal<Napi::Symbol> ClassAdapter<T, A>::env_local_adaptee_symbol = {};
+EnvLocal ClassAdapter<T, A>::env_local = {};
 
 // TODO:
 // Finish the MemoryAdapter types implementation
 // make robot->MemoryRegion.New(env) work as MemoryRegion::New(env, adaptee = nullptr), and also allow the {} syntax too.
 // and also the ctor as MemoryRegion::Ctor(env) and an instanceof checker named MemoryRegion::IsInstance(Napi::Value value)
+
+// implement the clone and compare functions for various classes (from robot.js)

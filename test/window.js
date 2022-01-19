@@ -253,10 +253,10 @@ module.exports = function (robot, log, sprintf, getline, assert)
 		var b2 = w2.getBounds();
 
 		w1.setBounds (100, 100, 250, 300); w1.setTitle ("Hello");
-		w2.setBounds (350, 400, 550, 400); w2.setTitle ("World");
+		w2.setBounds (350, 400, 550, 500); w2.setTitle ("World");
 		Timer.sleep (500);
 		assert (w1.getBounds().eq (Bounds (100, 100, 250, 300)));
-		assert (w2.getBounds().eq (Bounds (350, 400, 550, 400)));
+		assert (w2.getBounds().eq (Bounds (350, 400, 550, 500)));
 
 		if (process.platform === "darwin")
 		{

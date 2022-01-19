@@ -4,6 +4,9 @@
 class ScreenAdapter :
   public ClassAdapter<ScreenAdapter, Robot::Screen> {
 
+  private:
+    static EnvLocal env_local;
+
   public:
     static Napi::Function Init(Napi::Env env);
     

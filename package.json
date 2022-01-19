@@ -10,15 +10,14 @@
     "release": "node ./publish-release.js",
     "test": "node test/test.js types timer",
     "test:ci:node": "node test/test.js types",
-    "test:ci:electron": "electron test/electron.js types"
+    "test:ci:electron": "electron --trace-warnings test/electron.js types"
   },
   "author": "Aaron Meriwether",
   "license": "Zlib",
   "binary": {
     "module_name": "robot",
     "napi_versions": [
-      3,
-      8
+      4
     ],
     "module_path": "{platform}-{arch}-napi-v{napi_build_version}/",
     "host": "https://github.com/p120ph37/robot-js/releases/download/",
@@ -34,9 +33,13 @@
     "@mapbox/node-pre-gyp": "^1.0.8",
     "node-addon-api": "github:p120ph37/node-addon-api#issue-1123"
   },
+  "bundledDependencies": [
+    "@mapbox/node-pre-gyp",
+    "node-addon-api"
+  ],
   "devDependencies": {
     "@octokit/rest": "^18.12.0",
-    "node-png": "~0.4",
+    "pngjs": "^6.0.0",
     "readline-sync": "~1.4",
     "sprintf-js": "~1.1"
   }

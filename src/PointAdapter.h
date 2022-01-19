@@ -23,4 +23,6 @@ class PointAdapter :
     Napi::Value sub(const Napi::CallbackInfo& info);
     Napi::Value neg(const Napi::CallbackInfo& info);
 
- };
+    Napi::Value toString(const Napi::CallbackInfo& info);
+
+};

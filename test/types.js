@@ -982,7 +982,7 @@ module.exports = function (robot, log, sprintf, getline, assert)
 		assert (typeof r1.getRandom ( ) === "number"   );
 		assert (typeof r1.contains  (0) === "boolean"  );
 
-		assert (typeof Color.normalize() === "object");
+		assert (typeof Range.normalize() === "object");
 
 		assert (typeof r1.eq (  ) === "boolean");
 		assert (typeof r1.ne (  ) === "boolean");

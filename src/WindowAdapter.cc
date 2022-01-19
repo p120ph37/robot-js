@@ -12,6 +12,10 @@ Napi::Function WindowAdapter::Init(Napi::Env env) {
     InstanceMethod("isBorderless", &WindowAdapter::isBorderless),
     InstanceMethod("isMinimized", &WindowAdapter::isMinimized),
     InstanceMethod("isMaximized", &WindowAdapter::isMaximized),
+    InstanceMethod("setTopMost", &WindowAdapter::setTopMost),
+    InstanceMethod("setBorderless", &WindowAdapter::setBorderless),
+    InstanceMethod("setMinimized", &WindowAdapter::setMinimized),
+    InstanceMethod("setMaximized", &WindowAdapter::setMaximized),
     InstanceMethod("getProcess", &WindowAdapter::getProcess),
     InstanceMethod("getPID", &WindowAdapter::getPID),
     InstanceMethod("getHandle", &WindowAdapter::getHandle),
@@ -24,6 +28,8 @@ Napi::Function WindowAdapter::Init(Napi::Env env) {
     InstanceMethod("setClient", &WindowAdapter::setClient),
     InstanceMethod("mapToClient", &WindowAdapter::mapToClient),
     InstanceMethod("mapToScreen", &WindowAdapter::mapToScreen),
+    InstanceMethod("eq", &WindowAdapter::eq),
+    InstanceMethod("ne", &WindowAdapter::ne),
     // TODO:: list eq/ne?
     StaticMethod("getList", &WindowAdapter::getList),
     StaticMethod("getActive", &WindowAdapter::getActive),
@@ -61,6 +67,22 @@ Napi::Value WindowAdapter::isMaximized(const Napi::CallbackInfo& info) {
   return Napi::Boolean::New(env, adaptee.IsMaximized());
 }
 
+void WindowAdapter::setTopMost(const Napi::CallbackInfo& info) {
+  adaptee.SetTopMost(info[0].As<Napi::Boolean>());
+}
+
+void WindowAdapter::setBorderless(const Napi::CallbackInfo& info) {
+  adaptee.SetBorderless(info[0].As<Napi::Boolean>());
+}
+
+void WindowAdapter::setMinimized(const Napi::CallbackInfo& info) {
+  adaptee.SetMinimized(info[0].As<Napi::Boolean>());
+}
+
+void WindowAdapter::setMaximized(const Napi::CallbackInfo& info) {
+  adaptee.SetMaximized(info[0].As<Napi::Boolean>());
+}
+
 Napi::Value WindowAdapter::getProcess(const Napi::CallbackInfo& info) {
   return ProcessAdapter::New(env, adaptee.GetProcess());
 }
@@ -82,7 +104,7 @@ Napi::Value WindowAdapter::getTitle(const Napi::CallbackInfo& info) {
 }
 
 void WindowAdapter::setTitle(const Napi::CallbackInfo& info) {
-  adaptee.SetTitle(info[0].ToString().Utf8Value().c_str());
+  adaptee.SetTitle(info[0].As<Napi::String>().Utf8Value().c_str());
 }
 
 Napi::Value WindowAdapter::getBounds(const Napi::CallbackInfo& info) {
@@ -111,7 +133,9 @@ Napi::Value WindowAdapter::mapToScreen(const Napi::CallbackInfo& info) {
 
 Napi::Value WindowAdapter::getList(const Napi::CallbackInfo& info) {
   auto env = info.Env();
-  auto windows = Robot::Window::GetList();
+  auto windows = info[0].IsUndefined() ?
+    Robot::Window::GetList() :
+    Robot::Window::GetList(info[0].As<Napi::String>().Utf8Value().c_str());
   auto arr = Napi::Array::New(env, windows.size());
   for(size_t i = 0; i < windows.size(); i++) {
     arr[i] = New(env, windows[i]);
@@ -132,5 +156,21 @@ void WindowAdapter::setActive(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value WindowAdapter::isAxEnabled(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(info.Env(), Robot::Window::IsAxEnabled());
+  return Napi::Boolean::New(info.Env(), Robot::Window::IsAxEnabled(info[0].IsUndefined() ? false : info[0].As<Napi::Boolean>()));
+}
+
+Napi::Value WindowAdapter::eq(const Napi::CallbackInfo& info) {
+  if(IsInstance(info[0])) {
+    return Napi::Boolean::New(env, adaptee == Unwrap(info[0])->adaptee);
+  } else {
+    return Napi::Boolean::New(env, adaptee.GetHandle() == info[0].As<Napi::Number>().Int64Value());
+  }
+}
+
+Napi::Value WindowAdapter::ne(const Napi::CallbackInfo& info) {
+  if(IsInstance(info[0])) {
+    return Napi::Boolean::New(env, adaptee != Unwrap(info[0])->adaptee);
+  } else {
+    return Napi::Boolean::New(env, adaptee.GetHandle() != info[0].As<Napi::Number>().Int64Value());
+  }
 }

@@ -22,4 +22,6 @@ class RangeAdapter :
     Napi::Value getRandom(const Napi::CallbackInfo& info);
     Napi::Value contains(const Napi::CallbackInfo& info);
 
- };
+    Napi::Value toString(const Napi::CallbackInfo& info);
+
+};

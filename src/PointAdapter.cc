@@ -1,5 +1,6 @@
 #include "PointAdapter.h"
 #include "SizeAdapter.h"
+#include <sstream>
 
 Napi::Function PointAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Point", {
@@ -13,6 +14,7 @@ Napi::Function PointAdapter::Init(Napi::Env env) {
     InstanceMethod("eq", &PointAdapter::eq),
     InstanceMethod("ne", &PointAdapter::ne),
     InstanceMethod("neg", &PointAdapter::neg),
+    InstanceMethod("toString", &PointAdapter::toString),
   });
 }
 
@@ -69,4 +71,14 @@ Napi::Value PointAdapter::sub(const Napi::CallbackInfo& info) {
 
 Napi::Value PointAdapter::neg(const Napi::CallbackInfo& info) {
   return New(env, -adaptee);
+}
+
+Napi::Value PointAdapter::toString(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env,
+    (std::stringstream() <<
+      "[" <<
+      adaptee.X << ", " <<
+      adaptee.Y << "]"
+    ).str()
+  );
 }

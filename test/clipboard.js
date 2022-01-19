@@ -27,7 +27,7 @@ module.exports = function (robot, log, sprintf, getline, assert)
 	var Clipboard = robot.Clipboard;
 
 	var fs  = require ("fs"      );
-	var png = require ("node-png").PNG;
+	var png = require ("pngjs"   ).PNG;
 
 
 
@@ -239,7 +239,7 @@ module.exports = function (robot, log, sprintf, getline, assert)
 				for (var i = 0, j = 0; i < size; ++i, j += 4)
 					buffer.writeUInt32LE (data[i], j);
 
-				result.pack().pipe (fs.createWriteStream (name));
+				fs.writeFileSync(name, png.sync.write(result));
 			};
 
 			saveImage ("pattern_orig.png", image  );

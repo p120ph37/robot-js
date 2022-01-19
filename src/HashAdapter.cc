@@ -1,4 +1,5 @@
 #include "HashAdapter.h"
+#include <sstream>
 
 Napi::Function HashAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Hash", {
@@ -6,6 +7,7 @@ Napi::Function HashAdapter::Init(Napi::Env env) {
     InstanceMethod("append", &HashAdapter::append),
     InstanceMethod("eq", &HashAdapter::eq),
     InstanceMethod("ne", &HashAdapter::ne),
+    InstanceMethod("toString", &HashAdapter::toString),
   });
 }
 
@@ -81,4 +83,10 @@ Napi::Value HashAdapter::ne(const Napi::CallbackInfo& info) {
     info[0].As<Napi::Number>().Int32Value() :
     Unwrap(info[0])->adaptee.Result
   ));
+}
+
+Napi::Value HashAdapter::toString(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env,
+    (std::stringstream() << "0x" << std::uppercase << std::hex << adaptee.Result).str()
+  );
 }

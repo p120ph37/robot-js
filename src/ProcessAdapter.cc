@@ -20,6 +20,8 @@ Napi::Function ProcessAdapter::Init(Napi::Env env) {
     StaticMethod("getList", &ProcessAdapter::getList),
     StaticMethod("getCurrent", &ProcessAdapter::getCurrent),
     StaticMethod("isSys64Bit", &ProcessAdapter::isSys64Bit),
+    InstanceMethod("eq", &ProcessAdapter::eq),
+    InstanceMethod("ne", &ProcessAdapter::ne),
   });
 }
 
@@ -74,7 +76,7 @@ Napi::Value ProcessAdapter::hasExited(const Napi::CallbackInfo& info) {
 
 Napi::Value ProcessAdapter::getModules(const Napi::CallbackInfo& info) {
   auto env = info.Env();
-  auto modules = info[0].IsUndefined() ? adaptee.GetModules() : adaptee.GetModules(info[0].ToString().Utf8Value().c_str());
+  auto modules = info[0].IsUndefined() ? adaptee.GetModules() : adaptee.GetModules(info[0].As<Napi::String>().Utf8Value().c_str());
   auto arr = Napi::Array::New(env, modules.size());
   for(size_t i = 0; i < modules.size(); i++) {
     arr[i] = ModuleAdapter::New(env, modules[i]);
@@ -84,7 +86,7 @@ Napi::Value ProcessAdapter::getModules(const Napi::CallbackInfo& info) {
 
 Napi::Value ProcessAdapter::getWindows(const Napi::CallbackInfo& info) {
   auto env = info.Env();
-  auto windows = info[0].IsUndefined() ? adaptee.GetWindows() : adaptee.GetWindows(info[0].ToString().Utf8Value().c_str());
+  auto windows = info[0].IsUndefined() ? adaptee.GetWindows() : adaptee.GetWindows(info[0].As<Napi::String>().Utf8Value().c_str());
   auto arr = Napi::Array::New(env, windows.size());
   for(size_t i = 0; i < windows.size(); i++) {
     arr[i] = WindowAdapter::New(env, windows[i]);
@@ -94,7 +96,9 @@ Napi::Value ProcessAdapter::getWindows(const Napi::CallbackInfo& info) {
 
 Napi::Value ProcessAdapter::getList(const Napi::CallbackInfo& info) {
   auto env = info.Env();
-  auto processes = Robot::Process::GetList();
+  auto processes = info[0].IsUndefined() ?
+    Robot::Process::GetList() :
+    Robot::Process::GetList(info[0].As<Napi::String>().Utf8Value().c_str());
   auto arr = Napi::Array::New(env, processes.size());
   for(size_t i = 0; i < processes.size(); i++) {
     arr[i] = New(env, processes[i]);
@@ -108,4 +112,20 @@ Napi::Value ProcessAdapter::getCurrent(const Napi::CallbackInfo& info) {
 
 Napi::Value ProcessAdapter::isSys64Bit(const Napi::CallbackInfo& info) {
   return Napi::Boolean::New(info.Env(), Robot::Process::IsSys64Bit());
+}
+
+Napi::Value ProcessAdapter::eq(const Napi::CallbackInfo& info) {
+  if(IsInstance(info[0])) {
+    return Napi::Boolean::New(env, adaptee == Unwrap(info[0])->adaptee);
+  } else {
+    return Napi::Boolean::New(env, adaptee.GetPID() == info[0].As<Napi::Number>().Int64Value());
+  }
+}
+
+Napi::Value ProcessAdapter::ne(const Napi::CallbackInfo& info) {
+  if(IsInstance(info[0])) {
+    return Napi::Boolean::New(env, adaptee != Unwrap(info[0])->adaptee);
+  } else {
+    return Napi::Boolean::New(env, adaptee.GetPID() != info[0].As<Napi::Number>().Int64Value());
+  }
 }

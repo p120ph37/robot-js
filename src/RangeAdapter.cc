@@ -1,4 +1,5 @@
 #include "RangeAdapter.h"
+#include <sstream>
 
 Napi::Function RangeAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Range", {
@@ -11,6 +12,7 @@ Napi::Function RangeAdapter::Init(Napi::Env env) {
     InstanceMethod("getRandom", &RangeAdapter::getRandom),
     InstanceMethod("eq", &RangeAdapter::eq),
     InstanceMethod("ne", &RangeAdapter::ne),
+    InstanceMethod("toString", &RangeAdapter::toString),
   });
 }
 
@@ -66,4 +68,14 @@ Napi::Value RangeAdapter::contains(const Napi::CallbackInfo& info) {
 
 Napi::Value RangeAdapter::getRandom(const Napi::CallbackInfo& info) {
   return Napi::Number::New(env, adaptee.GetRandom());
+}
+
+Napi::Value RangeAdapter::toString(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env,
+    (std::stringstream() <<
+      "[" <<
+      adaptee.Min << ", " <<
+      adaptee.Max << "]"
+    ).str()
+  );
 }

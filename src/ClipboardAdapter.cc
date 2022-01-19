@@ -33,7 +33,7 @@ Napi::Value ClipboardAdapter::setText(const Napi::CallbackInfo& info) {
     throw Napi::TypeError::New(env, "Invalid arguments");
   }
   return Napi::Boolean::New(env, Robot::Clipboard::SetText(
-    info[0].ToString().Utf8Value().c_str()
+    info[0].As<Napi::String>().Utf8Value().c_str()
   ));
 }
 

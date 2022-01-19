@@ -24,4 +24,6 @@ class ColorAdapter :
     Napi::Value getARGB(const Napi::CallbackInfo& info);
     void setARGB(const Napi::CallbackInfo& info);
 
+    Napi::Value toString(const Napi::CallbackInfo& info);
+
 };

@@ -2,7 +2,7 @@
 #include "ColorAdapter.h"
 #include "PointAdapter.h"
 #include "SizeAdapter.h"
-#include <iostream>
+#include <sstream>
 
 Napi::Function ImageAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Image", {
@@ -21,6 +21,7 @@ Napi::Function ImageAdapter::Init(Napi::Env env) {
     InstanceMethod("flip", &ImageAdapter::flip),
     InstanceMethod("eq", &ImageAdapter::eq),
     InstanceMethod("ne", &ImageAdapter::ne),
+    InstanceMethod("toString", &ImageAdapter::toString),
   });
 }
 
@@ -55,17 +56,14 @@ Napi::Value ImageAdapter::create(const Napi::CallbackInfo& info) {
   auto newLength = newSize.W * newSize.H;
   if(newLength <= adaptee->GetLimit()) {
     auto r = Napi::Boolean::New(env, adaptee->Create(newSize));
-    std::cout << "size-reduction is fine to leave array exposed: " << adaptee->GetData() << "\n";
     return r;
   }
   if(!bufferRef.IsEmpty() && bufferRef.Value().IsNull()) {
-    std::cout << "recreate if buffer was never exposed is fine\n";
     adaptee->Create(newSize);
   }
   // Only if a re-alloc of the image data would occur, and if the existing buffer was exposed, do we need to copy before resizing.
   auto image = std::make_shared<Robot::Image>(Robot::Image(*adaptee));
   if(image->Create(newSize)) {
-    std::cout << "array is now invalid\n";
     clear(); adaptee = image;
     return Napi::Boolean::New(env, true);
   }
@@ -122,7 +120,6 @@ Napi::Value ImageAdapter::getData(const Napi::CallbackInfo& info) {
       env, adaptee->GetData(),
       adaptee->GetLimit() * sizeof(Robot::uint32),
       [imagePtr=adaptee](Napi::Env /*env*/, void* /*data*/) mutable {
-        std::cout << "Finalizing " << imagePtr << "\n";
         imagePtr.reset();
       }
     ));
@@ -153,7 +150,6 @@ void ImageAdapter::setPixel(const Napi::CallbackInfo& info) {
 
 Napi::Value ImageAdapter::fill(const Napi::CallbackInfo& info) {
   auto c = ColorAdapter::NewAdaptee(info);
-  std::cout << "C: " << std::hex << info[0].As<Napi::Number>().Int32Value() << "\n";
   return Napi::Boolean::New(env, adaptee->Fill(c.R, c.G, c.B, c.A));
 }
 
@@ -171,4 +167,16 @@ Napi::Value ImageAdapter::eq(const Napi::CallbackInfo& info) {
 
 Napi::Value ImageAdapter::ne(const Napi::CallbackInfo& info) {
   return Napi::Boolean::New(env, *adaptee != *Unwrap(info[0])->adaptee);
+}
+
+Napi::Value ImageAdapter::toString(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env,
+    (std::stringstream() <<
+      "[" <<
+      adaptee->GetWidth() << "x" <<
+      adaptee->GetHeight() << " - " <<
+      adaptee->GetLength() << "/" <<
+      adaptee->GetLimit() << "]"
+    ).str()
+  );
 }

@@ -23,4 +23,6 @@ class SizeAdapter :
     Napi::Value add(const Napi::CallbackInfo& info);
     Napi::Value sub(const Napi::CallbackInfo& info);
 
- };
+    Napi::Value toString(const Napi::CallbackInfo& info);
+
+};

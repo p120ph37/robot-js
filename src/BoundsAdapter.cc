@@ -1,6 +1,7 @@
 #include "BoundsAdapter.h"
 #include "PointAdapter.h"
 #include "SizeAdapter.h"
+#include <sstream>
 
 Napi::Function BoundsAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Bounds", {
@@ -35,6 +36,7 @@ Napi::Function BoundsAdapter::Init(Napi::Env env) {
     InstanceMethod("intersect", &BoundsAdapter::intersect),
     InstanceMethod("eq", &BoundsAdapter::eq),
     InstanceMethod("ne", &BoundsAdapter::ne),
+    InstanceMethod("toString", &BoundsAdapter::toString),
   });
 }
 
@@ -216,4 +218,16 @@ Napi::Value BoundsAdapter::unite(const Napi::CallbackInfo& info) {
 
 Napi::Value BoundsAdapter::intersect(const Napi::CallbackInfo& info) {
   return New(env, adaptee & NewAdaptee(info));
+}
+
+Napi::Value BoundsAdapter::toString(const Napi::CallbackInfo& info) {
+  return Napi::String::New(env,
+    (std::stringstream() <<
+      "[" <<
+      adaptee.X << ", " <<
+      adaptee.Y << ", " <<
+      adaptee.W << ", " <<
+      adaptee.H << "]"
+    ).str()
+  );
 }
