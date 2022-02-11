@@ -6,11 +6,8 @@
   "gypfile": true,
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
-    "build": "node-pre-gyp rebuild package --build-from-source --thin=yes --jobs=max",
-    "release": "node ./publish-release.js",
     "test": "node test/test.js types timer",
-    "test:ci:node": "node test/test.js types",
-    "test:ci:electron": "electron --trace-warnings test/electron.js types"
+    "test:ci": "node test/test.js types"
   },
   "author": "Aaron Meriwether",
   "license": "Zlib",
@@ -33,10 +30,6 @@
     "@mapbox/node-pre-gyp": "^1.0.8",
     "node-addon-api": "github:p120ph37/node-addon-api#issue-1123"
   },
-  "bundledDependencies": [
-    "@mapbox/node-pre-gyp",
-    "node-addon-api"
-  ],
   "devDependencies": {
     "@octokit/rest": "^18.12.0",
     "pngjs": "^6.0.0",

@@ -83,13 +83,11 @@ void ColorAdapter::setARGB(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value ColorAdapter::toString(const Napi::CallbackInfo& info) {
-  return Napi::String::New(env,
-    (std::stringstream() <<
-      "[" <<
+  auto stringstream = std::stringstream();
+  stringstream << "[" <<
       adaptee.R << ", " <<
       adaptee.G << ", " <<
       adaptee.B << ", " <<
-      adaptee.A << "]"
-    ).str()
-  );
+      adaptee.A << "]";
+  return Napi::String::New(env, stringstream.str());
 }

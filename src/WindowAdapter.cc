@@ -163,7 +163,7 @@ Napi::Value WindowAdapter::eq(const Napi::CallbackInfo& info) {
   if(IsInstance(info[0])) {
     return Napi::Boolean::New(env, adaptee == Unwrap(info[0])->adaptee);
   } else {
-    return Napi::Boolean::New(env, adaptee.GetHandle() == info[0].As<Napi::Number>().Int64Value());
+    return Napi::Boolean::New(env, adaptee.GetHandle() == (Robot::uintptr)info[0].As<Napi::Number>().Int64Value());
   }
 }
 
@@ -171,6 +171,6 @@ Napi::Value WindowAdapter::ne(const Napi::CallbackInfo& info) {
   if(IsInstance(info[0])) {
     return Napi::Boolean::New(env, adaptee != Unwrap(info[0])->adaptee);
   } else {
-    return Napi::Boolean::New(env, adaptee.GetHandle() != info[0].As<Napi::Number>().Int64Value());
+    return Napi::Boolean::New(env, adaptee.GetHandle() != (Robot::uintptr)info[0].As<Napi::Number>().Int64Value());
   }
 }

@@ -66,7 +66,7 @@ Napi::Value MouseAdapter::getState(const Napi::CallbackInfo& info) {
     Robot::ButtonState state;
     if(Robot::Mouse::GetState(state)) {
       for(auto el : state) {
-        o[el.first] = Napi::Boolean::New(env, el.second);
+        o.Set(el.first, Napi::Boolean::New(env, el.second));
       }
     }
     return o;

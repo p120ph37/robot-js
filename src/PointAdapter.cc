@@ -74,11 +74,9 @@ Napi::Value PointAdapter::neg(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value PointAdapter::toString(const Napi::CallbackInfo& info) {
-  return Napi::String::New(env,
-    (std::stringstream() <<
-      "[" <<
+  auto stringstream = std::stringstream();
+  stringstream << "[" <<
       adaptee.X << ", " <<
-      adaptee.Y << "]"
-    ).str()
-  );
+      adaptee.Y << "]";
+  return Napi::String::New(env, stringstream.str());
 }

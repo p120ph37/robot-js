@@ -56,11 +56,12 @@ void HashAdapter::append(const Napi::CallbackInfo& info) {
   }
   if(p.IsArray()) {
     auto arr = p.As<Napi::Array>();
-    Robot::uint8 data[arr.Length()];
+    auto *data = new Robot::uint8[arr.Length()];
     for(size_t i = 0; i < arr.Length(); i++) {
       data[i] = arr.Get(i).As<Napi::Number>().Int32Value();
     }
     adaptee.Append(data, arr.Length());
+    delete data;
     return;
   }
   if(p.IsArrayBuffer()) {
@@ -86,7 +87,7 @@ Napi::Value HashAdapter::ne(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value HashAdapter::toString(const Napi::CallbackInfo& info) {
-  return Napi::String::New(env,
-    (std::stringstream() << "0x" << std::uppercase << std::hex << adaptee.Result).str()
-  );
+  auto stringstream = std::stringstream();
+  stringstream << "0x" << std::uppercase << std::hex << adaptee.Result;
+  return Napi::String::New(env, stringstream.str());
 }

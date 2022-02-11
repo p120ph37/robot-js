@@ -67,7 +67,7 @@ Napi::Value KeyboardAdapter::getState(const Napi::CallbackInfo& info) {
     Robot::KeyState state;
     if(Robot::Keyboard::GetState(state)) {
       for(auto el : state) {
-        o[el.first] = Napi::Boolean::New(env, el.second);
+        o.Set(el.first, Napi::Boolean::New(env, el.second));
       }
     }
     return o;

@@ -74,11 +74,9 @@ Napi::Value SizeAdapter::sub(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value SizeAdapter::toString(const Napi::CallbackInfo& info) {
-  return Napi::String::New(env,
-    (std::stringstream() <<
-      "[" <<
+  auto stringstream = std::stringstream();
+  stringstream << "[" <<
       adaptee.W << ", " <<
-      adaptee.H << "]"
-    ).str()
-  );
+      adaptee.H << "]";
+  return Napi::String::New(env, stringstream.str());
 }

@@ -1,20 +1,20 @@
 name: Build
 on: [push]
 env:
-  HOST_NODE_VERSION: 14.4.0
+  HOST_NODE_VERSION: v16.13.2
 jobs:
   build:
     strategy:
       matrix:
         os:
           - windows-2019
-          - ubuntu-18.04
+          - ubuntu-20.04
           - macos-10.15
         arch:
           - 64
           - 32
         exclude:
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             arch: 32
           - os: macos-10.15
             arch: 32
@@ -53,9 +53,9 @@ jobs:
           [ -e "$NVM_HOME/nvm.sh" ] && . "$NVM_HOME/nvm.sh"
           nvm install $HOST_NODE_VERSION $ARCH
           nvm use $HOST_NODE_VERSION $ARCH && sleep 3
-          npm ci --ignore-scripts
-          npm run build
-          npm run test:ci:node
+          npm ci --build-from-source
+          npm run test:ci
+          npx -c 'node-pre-gyp package'
       - uses: actions/upload-artifact@v2
         with:
           path: build/stage/*/*.tar.gz
@@ -76,4 +76,4 @@ jobs:
           path: build/stage
       - run: |
           npm ci --ignore-scripts
-          GITHUB_TOKEN=${{ github.token }} npm run release
+          GITHUB_TOKEN=${{ github.token }} node ./publish-release.js

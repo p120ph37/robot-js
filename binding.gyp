@@ -57,6 +57,7 @@
       "conditions": [
         [ "OS == 'linux'", {
           "libraries": ["-lrt", "-lX11", "-lXtst", "-lXinerama"],
+          "cflags+": ["-Wno-missing-field-initializers", "-Wimplicit-fallthrough=0"],
         }],
         [ "OS == 'mac'", {
           "libraries": ["-framework ApplicationServices", "-framework AppKit"],

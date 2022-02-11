@@ -53,7 +53,7 @@ Napi::Value ImageAdapter::create(const Napi::CallbackInfo& info) {
   if(newSize.W == adaptee->GetWidth() && newSize.H == adaptee->GetHeight()) {
     return Napi::Boolean::New(env, true);
   }
-  auto newLength = newSize.W * newSize.H;
+  Robot::uint32 newLength = newSize.W * newSize.H;
   if(newLength <= adaptee->GetLimit()) {
     auto r = Napi::Boolean::New(env, adaptee->Create(newSize));
     return r;
@@ -170,13 +170,11 @@ Napi::Value ImageAdapter::ne(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value ImageAdapter::toString(const Napi::CallbackInfo& info) {
-  return Napi::String::New(env,
-    (std::stringstream() <<
-      "[" <<
+  auto stringstream = std::stringstream();
+  stringstream << "[" <<
       adaptee->GetWidth() << "x" <<
       adaptee->GetHeight() << " - " <<
       adaptee->GetLength() << "/" <<
-      adaptee->GetLimit() << "]"
-    ).str()
-  );
+      adaptee->GetLimit() << "]";
+  return Napi::String::New(env, stringstream.str());
 }

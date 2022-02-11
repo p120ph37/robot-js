@@ -71,11 +71,9 @@ Napi::Value RangeAdapter::getRandom(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value RangeAdapter::toString(const Napi::CallbackInfo& info) {
-  return Napi::String::New(env,
-    (std::stringstream() <<
-      "[" <<
+  auto stringstream = std::stringstream();
+  stringstream << "[" <<
       adaptee.Min << ", " <<
-      adaptee.Max << "]"
-    ).str()
-  );
+      adaptee.Max << "]";
+  return Napi::String::New(env, stringstream.str());
 }
