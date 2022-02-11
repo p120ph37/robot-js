@@ -4,7 +4,9 @@
 #include "ImageAdapter.h"
 #include "WindowAdapter.h"
 
-EnvLocal ScreenAdapter::env_local = {};
+namespace {
+  const char* SCREENS = "screens";
+}
 
 Napi::Function ScreenAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Screen", {
@@ -59,22 +61,22 @@ Napi::Value ScreenAdapter::synchronize(const Napi::CallbackInfo& info) {
   for(size_t i = 0; i < screens.size(); i++) {
     arr[i] = New(env, *screens[i]);
   }
-  env_local.set(arr);
+  EnvLocal(env)[SCREENS] = arr;
   return Napi::Boolean::New(env, true);
 }
 
 Napi::Value ScreenAdapter::getMain(const Napi::CallbackInfo& info) {
   auto env = info.Env();
-  if(env_local.has(env)) {
-    return env_local.get(env)[0U];
+  if(EnvLocal(env).Has(SCREENS)) {
+    return EnvLocal(env).Get(SCREENS).As<Napi::Array>()[0U];
   }
   return env.Null();
 }
 
 Napi::Value ScreenAdapter::getList(const Napi::CallbackInfo& info) {
   auto env = info.Env();
-  if(env_local.has(env)) {
-    return env_local.get(env);
+  if(EnvLocal(env).Has(SCREENS)) {
+    return EnvLocal(env).Get(SCREENS).As<Napi::Array>();
   }
   return Napi::Array::New(env, 0);
 }
@@ -92,8 +94,8 @@ Napi::Value ScreenAdapter::getScreen(const Napi::CallbackInfo& info) {
   } else {
     p = PointAdapter::NewAdaptee(info);
   }
-  if(env_local.has(env)) {
-    for(auto el : env_local.get(env)) {
+  if(EnvLocal(env).Has(SCREENS)) {
+    for(auto el : EnvLocal(env).Get(SCREENS).As<Napi::Array>()) {
       if(ScreenAdapter::Unwrap(el.second)->adaptee.GetBounds().Contains(p)) {
         return el.second;
       }

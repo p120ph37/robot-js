@@ -1,7 +1,7 @@
 #pragma once
 
-#include "EnvLocal.h"
 #include <napi.h>
+#include <unordered_map>
 
 namespace {
   const char* CONSTRUCTOR = "constructor";
@@ -12,20 +12,26 @@ template <typename T, typename A>
 class ClassAdapter : public Napi::ObjectWrap<T> {
 
   private:
-    static EnvLocal env_local;
-    inline static void LazyInitEnv(napi_env env) {
-      if(env_local.has(env)) return;
-      auto o = Napi::Object::New(env);
-      o[CONSTRUCTOR] = T::Init(env);
-      o[ADAPTEE_SYMBOL] = Napi::Symbol::New(env, ADAPTEE_SYMBOL);
-      env_local.set(o);
-    }
+    static std::unordered_map<napi_env, Napi::ObjectReference> env_local;
 
   protected:
     Napi::Env env;
+    // Utility function to obtain a private Napi::Object local to each env, in which to store things.
+    inline static Napi::Object EnvLocal(napi_env env) {
+      if(!env_local.count(env)) {
+        auto o = Napi::Object::New(env);
+        o[CONSTRUCTOR] = T::Init(env);
+        o[ADAPTEE_SYMBOL] = Napi::Symbol::New(env, ADAPTEE_SYMBOL);
+        env_local[env] = Napi::Persistent(o);
+        Napi::Env(env).AddCleanupHook([env] {
+          env_local.erase(env);
+        });
+      }
+      return env_local[env].Value();
+    }
     // Utility function for use in constructor to allow retrieval of raw adaptee if passed internally.
     inline bool WrapAdaptee(const Napi::CallbackInfo& info) {
-      if(env_local.get(env).Get(ADAPTEE_SYMBOL).StrictEquals(info[0]) && info[1].IsExternal()) {
+      if(EnvLocal(env).Get(ADAPTEE_SYMBOL).StrictEquals(info[0]) && info[1].IsExternal()) {
         adaptee = *info[1].As<Napi::External<A>>().Data();
         return true;
       }
@@ -52,13 +58,12 @@ class ClassAdapter : public Napi::ObjectWrap<T> {
     A adaptee;
 //    static Napi::Function Init(napi_env env);
     inline static Napi::Function GetConstructor(napi_env env) {
-      LazyInitEnv(env);
-      return env_local.get(env).Get(CONSTRUCTOR).As<Napi::Function>();
+      return EnvLocal(env).Get(CONSTRUCTOR).As<Napi::Function>();
     }
     // Will only work for classes which use `if(WrapAdaptee(info)) return;` in their constructor:
     inline static Napi::Value New(napi_env env, A const &adaptee) {
       return New(env, {
-        env_local.get(env).Get(ADAPTEE_SYMBOL).As<Napi::Symbol>(),
+        EnvLocal(env).Get(ADAPTEE_SYMBOL).As<Napi::Symbol>(),
         Napi::External<A>::New(env, (A*)&adaptee)
       });
     }
@@ -100,7 +105,7 @@ class ClassAdapter : public Napi::ObjectWrap<T> {
       Napi::ObjectWrap<T>(info),
       env(info.Env()) {}
     // Change some ObjectWrap behavior to add auto-constructor mode
-    inline static Napi::Value NonConstructor(const Napi::CallbackInfo& info) {
+    inline static Napi::Value OnCalledAsFunction(const Napi::CallbackInfo& info) {
       return New(info);
     }
 
@@ -160,7 +165,7 @@ class ClassAdapter : public Napi::ObjectWrap<T> {
 };
 
 template <typename T, typename A>
-EnvLocal ClassAdapter<T, A>::env_local = {};
+std::unordered_map<napi_env, Napi::ObjectReference> ClassAdapter<T, A>::env_local = {};
 
 // TODO:
 // Finish the MemoryAdapter types implementation
