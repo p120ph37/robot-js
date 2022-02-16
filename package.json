@@ -26,6 +26,10 @@
     "darwin",
     "win32"
   ],
+  "files": [
+    "*.{gyp}",
+    "src/"
+  ],
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.8",
     "node-addon-api": "github:p120ph37/node-addon-api#issue-1123"
