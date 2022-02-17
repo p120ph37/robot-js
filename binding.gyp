@@ -46,7 +46,6 @@
 
         "src/RobotAdapter.cc",
       ],
-      "product_dir": "<(module_path)",
       "include_dirs": [
         "src/",
         "src/robot/Source/",
@@ -86,15 +85,15 @@
         }],
       ],
     },
-#    {
-#      "target_name": "copy_binary",
-#      "type": "none",
-#      "dependencies": [ "<(module_name)" ],
-#      "copies": [{
-#        "files": ["<(PRODUCT_DIR)/<@(_dependencies).node"],
-#	"destination": "<(module_path)",
-#	"conditions": [["OS == 'win'", { "files": ["<(PRODUCT_DIR)/<@(_dependencies).pdb"] }]]
-#      }]
-#    }
+    {
+      "target_name": "copy_binary",
+      "type": "none",
+      "dependencies": [ "<(module_name)" ],
+      "copies": [{
+        "files": ["<(PRODUCT_DIR)/<@(_dependencies).node"],
+        "destination": "<(module_path)",
+        "conditions": [["OS == 'win'", { "files": ["<(PRODUCT_DIR)/<@(_dependencies).{i,}pdb"] }]],
+      }],
+    },
   ],
 }

@@ -56,12 +56,11 @@ void HashAdapter::append(const Napi::CallbackInfo& info) {
   }
   if(p.IsArray()) {
     auto arr = p.As<Napi::Array>();
-    auto *data = new Robot::uint8[arr.Length()];
+    std::vector<Robot::uint8> data(arr.Length());
     for(size_t i = 0; i < arr.Length(); i++) {
       data[i] = arr.Get(i).As<Napi::Number>().Int32Value();
     }
-    adaptee.Append(data, arr.Length());
-    delete data;
+    adaptee.Append(data.data(), data.size());
     return;
   }
   if(p.IsArrayBuffer()) {
