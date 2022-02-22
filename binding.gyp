@@ -55,7 +55,7 @@
       "cflags_cc!": ["-fno-exceptions"],
       "conditions": [
         [ "OS == 'linux'", {
-          "libraries": ["-lrt", "-lX11", "-lXtst", "-lXinerama"],
+          "libraries": ["-lrt", "-lX11", "-lXtst", "-lXinerama", "-static-libstdc++"],
           "cflags+": ["-Wno-missing-field-initializers", "-Wimplicit-fallthrough=0"],
         }],
         [ "OS == 'mac'", {
