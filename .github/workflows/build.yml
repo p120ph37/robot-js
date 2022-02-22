@@ -53,12 +53,14 @@ jobs:
           [ -e "$NVM_HOME/nvm.sh" ] && . "$NVM_HOME/nvm.sh"
           nvm install $HOST_NODE_VERSION $ARCH
           nvm use $HOST_NODE_VERSION $ARCH && sleep 3
-          npm ci --build-from-source
+          npm ci --ignore-scripts
+          npm run build
           npm run test:ci
-          npx -c 'node-pre-gyp package'
       - uses: actions/upload-artifact@v2
         with:
-          path: build/stage/*/*.tar.gz
+          name: artifact
+          path: prebuilds/
+          if-no-files-found: error
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -73,7 +75,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: artifact
-          path: build/stage
+          path: prebuilds
       - run: |
           npm ci --ignore-scripts
           GITHUB_TOKEN=${{ github.token }} node ./publish-release.js

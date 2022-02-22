@@ -5,39 +5,30 @@
   "main": "index.js",
   "gypfile": true,
   "scripts": {
-    "install": "node-pre-gyp install --fallback-to-build",
+    "install": "node-gyp-build",
+    "build": "prebuildify --napi",
     "test": "node test/test.js types timer",
     "test:ci": "node test/test.js types"
   },
   "author": "Aaron Meriwether",
   "license": "Zlib",
-  "binary": {
-    "module_name": "robot",
-    "napi_versions": [
-      4
-    ],
-    "module_path": "{platform}-{arch}-napi-v{napi_build_version}/",
-    "host": "https://github.com/p120ph37/robot-js/releases/download/",
-    "remote_path": "{version}",
-    "package_name": "{platform}-{arch}-napi-v{napi_build_version}.tar.gz"
-  },
   "os": [
     "linux",
     "darwin",
     "win32"
   ],
   "files": [
-    "*.{gyp}",
-    "src/"
+    "prebuilds/"
   ],
-  "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.8",
-    "node-addon-api": "github:p120ph37/node-addon-api#issue-1123"
-  },
   "devDependencies": {
     "@octokit/rest": "^18.12.0",
     "pngjs": "^6.0.0",
+    "prebuildify": "^5.0.0",
     "readline-sync": "~1.4",
     "sprintf-js": "~1.1"
+  },
+  "dependencies": {
+    "node-addon-api": "github:p120ph37/node-addon-api#issue-1123",
+    "node-gyp-build": "^4.3.0"
   }
 }

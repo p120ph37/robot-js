@@ -4,11 +4,11 @@
     "Release": { "defines": ["NDEBUG"] },
   },
   "defines": [
-    "NAPI_VERSION=<(napi_build_version)",
+    "NAPI_VERSION=4",
   ],
   "targets": [
     {
-      "target_name": "<(module_name)",
+      "target_name": "robot",
       "sources": [
         "src/robot/Source/Bounds.cc",
         "src/robot/Source/Clipboard.cc",
@@ -66,11 +66,11 @@
             "CLANG_CXX_LIBRARY": "libc++",
             "MACOSX_DEPLOYMENT_TARGET": "10.7",
             "GCC_SYMBOLS_PRIVATE_EXTERN": "YES", # -fvisibility=hidden
-					 	"OTHER_CPLUSPLUSFLAGS": [
-					 		"-ObjC++", # even though this project itself isn't Obj-C, the frameworks are.
-					 		"-Wno-sign-compare",
-					 		"-Wno-missing-field-initializers",
-					 	],
+            "OTHER_CPLUSPLUSFLAGS": [
+              "-ObjC++", # even though this project itself isn't Obj-C, the frameworks are.
+              "-Wno-sign-compare",
+              "-Wno-missing-field-initializers",
+            ],
           },
         }],
         [ "OS == 'win'", {
@@ -84,16 +84,6 @@
           "msvs_disabled_warnings": [4005, 4661],
         }],
       ],
-    },
-    {
-      "target_name": "copy_binary",
-      "type": "none",
-      "dependencies": [ "<(module_name)" ],
-      "copies": [{
-        "files": ["<(PRODUCT_DIR)/<@(_dependencies).node"],
-        "destination": "<(module_path)",
-        "conditions": [["OS == 'win'", { "files": ["<(PRODUCT_DIR)/<@(_dependencies).{i,}pdb"] }]],
-      }],
     },
   ],
 }

@@ -14,7 +14,9 @@ const octokit = new Octokit({
 (async () => {
   const pkg = require('./package.json');
   const repoPath = (await exec('git remote get-url origin')).stdout.trim().replace(/^.*\/([^\/]+\/[^\/]+)$/, '$1').replace(/\.git$/, '');
-  const dir = path.join(__dirname, `build/stage/${pkg.version}`);
+//  const dir = path.join(__dirname, `build/stage/${pkg.version}`);
+//  const files = (await readdir(dir)).map(f => path.join(dir, f));
+  const files = [(await exec('npm pack')).stdout.trim()];
   const [owner, repo] = repoPath.split('/');
   const tag = pkg.version;
   let release = {};
@@ -35,7 +37,6 @@ const octokit = new Octokit({
       throw e;
     }
   }
-  const files = (await readdir(dir)).map(f => path.join(dir, f));
   console.log(`Uploading ${files.length} assets... (may take a while)`);
   const promises = files.map(async (file, i) => {
     const name = path.basename(file);
