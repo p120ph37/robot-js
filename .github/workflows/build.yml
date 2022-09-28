@@ -43,13 +43,15 @@ jobs:
         run: |
           echo NVM_HOME=$HOME/.nvm >>$GITHUB_ENV
           echo PYTHON=/usr/local/bin/python >>$GITHUB_ENV
+      - if: ${{ runner.os == 'Windows' }}
+        run: |
+          choco install nvm
       - uses: actions/checkout@v1
         with: 
           submodules: recursive
       - env:
           ARCH: ${{ runner.os == 'Windows' && matrix.arch || '' }}
         run: |
-          [ -e "$NVM_HOME/nvm.sh" ] || which nvm || choco install nvm
           [ -e "$NVM_HOME/nvm.sh" ] && . "$NVM_HOME/nvm.sh"
           nvm install $HOST_NODE_VERSION $ARCH
           nvm use $HOST_NODE_VERSION $ARCH && sleep 3
