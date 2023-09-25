@@ -8,7 +8,7 @@
     "install": "node-gyp-build",
     "build": "prebuildify --napi",
     "test": "node test/test.js types timer",
-    "test:ci": "node test/test.js types"
+    "test:ci": "node test/test.js types keyboard-auto"
   },
   "author": "Aaron Meriwether",
   "license": "Zlib",

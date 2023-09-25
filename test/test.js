@@ -54,6 +54,7 @@ function assert (cond, thisArg, args)
 var testTypes     = require ("./types"    )(mRobot, log, mSprintf, getline, assert);
 var testTimer     = require ("./timer"    )(mRobot, log, mSprintf, getline, assert);
 var testKeyboard  = require ("./keyboard" )(mRobot, log, mSprintf, getline, assert);
+var testKeyboardAuto = require ("./keyboard-auto" )(mRobot, log, mSprintf, getline, assert);
 var testMouse     = require ("./mouse"    )(mRobot, log, mSprintf, getline, assert);
 var testProcess   = require ("./process"  )(mRobot, log, mSprintf, getline, assert);
 var testWindow    = require ("./window"   )(mRobot, log, mSprintf, getline, assert);
@@ -130,6 +131,7 @@ function main (argc, argv)
 	var _types     = false;
 	var _timer     = false;
 	var _keyboard  = false;
+	var _keyboardAuto = false;
 	var _mouse     = false;
 	var _process   = false;
 	var _window    = false;
@@ -146,6 +148,7 @@ function main (argc, argv)
 			_types     = true;
 			_timer     = true;
 			_keyboard  = true;
+			_keyboardAuto = false; // Already covered in non-auto keyboard test
 			_mouse     = true;
 			_process   = true;
 			_window    = true;
@@ -158,6 +161,7 @@ function main (argc, argv)
 		if (argv[i] === "types"    ) _types     = true; else
 		if (argv[i] === "timer"    ) _timer     = true; else
 		if (argv[i] === "keyboard" ) _keyboard  = true; else
+		if (argv[i] === "keyboard-auto" ) _keyboardAuto = true; else
 		if (argv[i] === "mouse"    ) _mouse     = true; else
 		if (argv[i] === "process"  ) _process   = true; else
 		if (argv[i] === "window"   ) _window    = true; else
@@ -172,6 +176,7 @@ function main (argc, argv)
 		if (_types     && !testTypes    ()) break;
 		if (_timer     && !testTimer    ()) break;
 		if (_keyboard  && !testKeyboard ()) break;
+		if (_keyboardAuto && !testKeyboardAuto ()) break;
 		if (_mouse     && !testMouse    ()) break;
 		if (_process   && !testProcess  ()) break;
 		if (_window    && !testWindow   ()) break;

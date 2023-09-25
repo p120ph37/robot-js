@@ -63,21 +63,21 @@ jobs:
           name: artifact
           path: prebuilds/
           if-no-files-found: error
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo NPM_CACHE=$HOME/.npm >>$GITHUB_ENV
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.NPM_CACHE }}
-          key: npm-linux
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v3
-        with:
-          name: artifact
-          path: prebuilds
-      - run: |
-          npm ci --ignore-scripts
-          GITHUB_TOKEN=${{ github.token }} node ./publish-release.js
+#  release:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    steps:
+#      - run: |
+#          echo NPM_CACHE=$HOME/.npm >>$GITHUB_ENV
+#      - uses: actions/cache@v3
+#        with:
+#          path: ${{ env.NPM_CACHE }}
+#          key: npm-linux
+#      - uses: actions/checkout@v4
+#      - uses: actions/download-artifact@v3
+#        with:
+#          name: artifact
+#          path: prebuilds
+#      - run: |
+#          npm ci --ignore-scripts
+#          GITHUB_TOKEN=${{ github.token }} node ./publish-release.js
