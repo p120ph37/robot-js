@@ -1,7 +1,7 @@
 name: Build
 on: [push]
 env:
-  HOST_NODE_VERSION: v16.13.2
+  HOST_NODE_VERSION: v22.9.0
 jobs:
   build:
     strategy:
@@ -9,14 +9,20 @@ jobs:
         os:
           - windows-2019
           - ubuntu-20.04
-          - macos-10.15
+          - ubuntu-22.04-arm
+          - macos-13 # x86
+          - macos-14 # arm
         arch:
           - 64
           - 32
         exclude:
           - os: ubuntu-20.04
             arch: 32
-          - os: macos-10.15
+          - os: ubuntu-22.04-arm
+            arch: 32
+          - os: macos-13
+            arch: 32
+          - os: macos-14
             arch: 32
     runs-on: ${{ matrix.os }}
     defaults:
@@ -37,30 +43,34 @@ jobs:
           key: nvm-windows
       - if: ${{ runner.os == 'Linux' }}
         run: |
-          echo NVM_HOME=$HOME/.nvm >>$GITHUB_ENV
+          echo NVM_DIR=$HOME/.nvm >>$GITHUB_ENV
           sudo apt-get install libxinerama-dev libxtst-dev
       - if: ${{ runner.os == 'macOS' }}
         run: |
-          echo NVM_HOME=$HOME/.nvm >>$GITHUB_ENV
+          echo NVM_DIR=$HOME/.nvm >>$GITHUB_ENV
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
           echo PYTHON=/usr/local/bin/python >>$GITHUB_ENV
       - if: ${{ runner.os == 'Windows' }}
         run: |
           choco install nvm
+          echo "Waiting for nvm installer to complete..."
+          until nvm root >/dev/null 2>&1; do sleep 1; echo .; done
+          nvm debug
       - uses: actions/checkout@v4
         with: 
           submodules: recursive
       - env:
           ARCH: ${{ runner.os == 'Windows' && matrix.arch || '' }}
         run: |
-          [ -e "$NVM_HOME/nvm.sh" ] && . "$NVM_HOME/nvm.sh"
+          [ -e "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
           nvm install $HOST_NODE_VERSION $ARCH
           nvm use $HOST_NODE_VERSION $ARCH && sleep 3
           npm ci --ignore-scripts
-          npm run build
+          npm run build -- --target=$HOST_NODE_VERSION
           npm run test:ci
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: artifact
+          name: artifact-${{ matrix.os }}-${{ matrix.arch }}
           path: prebuilds/
           if-no-files-found: error
   release:
@@ -69,14 +79,15 @@ jobs:
     steps:
       - run: |
           echo NPM_CACHE=$HOME/.npm >>$GITHUB_ENV
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ${{ env.NPM_CACHE }}
           key: npm-linux
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          pattern: artifact-*
+          merge-multiple: true
           path: prebuilds
       - run: |
           npm ci --ignore-scripts

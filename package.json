@@ -21,14 +21,15 @@
     "prebuilds/"
   ],
   "devDependencies": {
-    "@octokit/rest": "^18.12.0",
+    "@octokit/rest": "^21.1.1",
+    "node-gyp": "^10.3.1",
     "pngjs": "^6.0.0",
-    "prebuildify": "^5.0.0",
+    "prebuildify": "^6.0.1",
     "readline-sync": "~1.4",
     "sprintf-js": "~1.1"
   },
   "dependencies": {
-    "node-addon-api": "^7.0.0",
-    "node-gyp-build": "^4.3.0"
+    "node-addon-api": "^8.3.1",
+    "node-gyp-build": "^4.8.4"
   }
 }

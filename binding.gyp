@@ -67,6 +67,7 @@
             "MACOSX_DEPLOYMENT_TARGET": "10.7",
             "GCC_SYMBOLS_PRIVATE_EXTERN": "YES", # -fvisibility=hidden
             "OTHER_CPLUSPLUSFLAGS": [
+              "-std=c++17",
               "-ObjC++", # even though this project itself isn't Obj-C, the frameworks are.
               "-Wno-sign-compare",
               "-Wno-missing-field-initializers",
