@@ -2,6 +2,7 @@ name: Build
 on: [push]
 env:
   HOST_NODE_VERSION: v22.9.0
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   build:
     strategy:
