@@ -143,7 +143,7 @@ Napi::Value MemoryAdapter::readData(const Napi::CallbackInfo& info) {
     throw Napi::TypeError::New(env, "Invalid arguments");
   }
   auto buffer = info[1].As<Napi::Buffer<uint8_t>>();
-  uint64_t length = info[0].As<Napi::Number>().Int64Value();
+  uint64_t length = info[2].IsUndefined() ? buffer.Length() : info[2].As<Napi::Number>().Int64Value();
   if(buffer.Length() < length) {
     throw Napi::RangeError::New(env, "Buffer is too small");
   }
@@ -274,24 +274,24 @@ void MemoryAdapter::RegionAdapter::bound(const Napi::CallbackInfo& info, const N
 }
 
 Napi::Value MemoryAdapter::RegionAdapter::start(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(env, adaptee.Start);
+  return Napi::Number::New(env, adaptee.Start);
 }
 void MemoryAdapter::RegionAdapter::start(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.Start = value.ToBoolean();
+  adaptee.Start = value.As<Napi::Number>().Int64Value();
 }
 
 Napi::Value MemoryAdapter::RegionAdapter::stop(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(env, adaptee.Stop);
+  return Napi::Number::New(env, adaptee.Stop);
 }
 void MemoryAdapter::RegionAdapter::stop(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.Stop = value.ToBoolean();
+  adaptee.Stop = value.As<Napi::Number>().Int64Value();
 }
 
 Napi::Value MemoryAdapter::RegionAdapter::size(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(env, adaptee.Size);
+  return Napi::Number::New(env, adaptee.Size);
 }
 void MemoryAdapter::RegionAdapter::size(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.Size = value.ToBoolean();
+  adaptee.Size = value.As<Napi::Number>().Int64Value();
 }
 
 Napi::Value MemoryAdapter::RegionAdapter::readable(const Napi::CallbackInfo& info) {

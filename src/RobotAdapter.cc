@@ -18,9 +18,9 @@
 
 RobotAdapter::RobotAdapter(Napi::Env env, Napi::Object exports) {
   DefineAddon(exports, {
-    InstanceValue("ROBOT_VERION", Napi::Number::New(env, ROBOT_VERSION)),
+    InstanceValue("ROBOT_VERSION", Napi::Number::New(env, ROBOT_VERSION)),
     InstanceValue("ROBOT_VERSION_STR", Napi::String::New(env, ROBOT_VERSION_STR " (" ADDON_VERSION_STR ")")),
-    InstanceValue("ADDON_VERION", Napi::Number::New(env, ADDON_VERSION)),
+    InstanceValue("ADDON_VERSION", Napi::Number::New(env, ADDON_VERSION)),
     InstanceValue("ADDON_VERSION_STR", Napi::String::New(env, ADDON_VERSION_STR)),
 
     InstanceValue("sleep", Napi::Function::New(env, &TimerAdapter::sleep)),
