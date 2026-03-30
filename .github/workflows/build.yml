@@ -5,7 +5,6 @@ env:
 jobs:
   build:
     strategy:
-      fail-fast: false
       matrix:
         os:
           - windows-2022
@@ -62,17 +61,21 @@ jobs:
         with:
           submodules: recursive
       - env:
-          ARCH: ${{ runner.os == 'Windows' && matrix.arch || '' }}
-          CROSS_ARCH: ${{ matrix.arch == 'x64' && '--arch x64' || '' }}
+          NVM_ARCH: ${{ runner.os == 'Windows' && matrix.arch != '32' && matrix.arch || '' }}
+          CROSS_ARCH: ${{ matrix.arch == 'x64' && '--arch x64' || (runner.os == 'Windows' && matrix.arch == '32' && '--arch ia32') || '' }}
         run: |
           [ -e "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-          nvm install $HOST_NODE_VERSION $ARCH
-          nvm use $HOST_NODE_VERSION $ARCH && sleep 3
+          nvm install $HOST_NODE_VERSION $NVM_ARCH
+          nvm use $HOST_NODE_VERSION $NVM_ARCH && sleep 3
           npm ci --ignore-scripts
           npm run build -- --target=$HOST_NODE_VERSION $CROSS_ARCH
-          if [ -n "$CROSS_ARCH" ]; then
+          if [ "${{ matrix.arch }}" = "x64" ]; then
             curl -sL https://nodejs.org/dist/$HOST_NODE_VERSION/node-$HOST_NODE_VERSION-darwin-x64.tar.gz | tar xz
             ./node-$HOST_NODE_VERSION-darwin-x64/bin/node test/test.js types
+          elif [ "${{ matrix.arch }}" = "32" ]; then
+            curl -sLO https://nodejs.org/dist/$HOST_NODE_VERSION/node-$HOST_NODE_VERSION-win-x86.zip
+            unzip -q node-$HOST_NODE_VERSION-win-x86.zip
+            ./node-$HOST_NODE_VERSION-win-x86/node test/test.js types
           else
             npm run test:ci
           fi
