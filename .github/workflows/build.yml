@@ -68,7 +68,11 @@ jobs:
           nvm use $HOST_NODE_VERSION $ARCH && sleep 3
           npm ci --ignore-scripts
           npm run build -- --target=$HOST_NODE_VERSION $CROSS_ARCH
-          [ -z "$CROSS_ARCH" ] && npm run test:ci || true
+          if [ -n "$CROSS_ARCH" ]; then
+            arch -x86_64 node test/test.js types
+          else
+            npm run test:ci
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: artifact-${{ matrix.os }}-${{ matrix.arch }}
