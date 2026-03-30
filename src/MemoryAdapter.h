@@ -27,24 +27,8 @@ class MemoryAdapter :
     Napi::Value getCacheSize(const Napi::CallbackInfo& info);
     Napi::Value readData(const Napi::CallbackInfo& info);
     Napi::Value writeData(const Napi::CallbackInfo& info);
-    Napi::Value readInt8(const Napi::CallbackInfo& info);
-    Napi::Value readInt16(const Napi::CallbackInfo& info);
-    Napi::Value readInt32(const Napi::CallbackInfo& info);
-    Napi::Value readInt64(const Napi::CallbackInfo& info);
-    Napi::Value readReal32(const Napi::CallbackInfo& info);
-    Napi::Value readReal64(const Napi::CallbackInfo& info);
-    Napi::Value readPtr(const Napi::CallbackInfo& info);
-    Napi::Value readBool(const Napi::CallbackInfo& info);
-    Napi::Value readString(const Napi::CallbackInfo& info);
-    Napi::Value writeInt8(const Napi::CallbackInfo& info);
-    Napi::Value writeInt16(const Napi::CallbackInfo& info);
-    Napi::Value writeInt32(const Napi::CallbackInfo& info);
-    Napi::Value writeInt64(const Napi::CallbackInfo& info);
-    Napi::Value writeReal32(const Napi::CallbackInfo& info);
-    Napi::Value writeReal64(const Napi::CallbackInfo& info);
-    Napi::Value writePtr(const Napi::CallbackInfo& info);
-    Napi::Value writeBool(const Napi::CallbackInfo& info);
-    Napi::Value writeString(const Napi::CallbackInfo& info);
+    Napi::Value readType(const Napi::CallbackInfo& info);
+    Napi::Value writeType(const Napi::CallbackInfo& info);
   
     class StatsAdapter :
       public ClassAdapter<StatsAdapter, Robot::Memory::Stats>,
