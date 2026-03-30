@@ -22,14 +22,6 @@ Napi::Function MemoryAdapter::Init(Napi::Env env) {
     StaticValue("DEFAULT", Napi::Number::New(env, Robot::Memory::Default)),
     StaticValue("SKIP_ERRORS", Napi::Number::New(env, Robot::Memory::SkipErrors)),
     StaticValue("AUTO_ACCESS", Napi::Number::New(env, Robot::Memory::AutoAccess)),
-    StaticValue("_TYPE_INT8", Napi::Number::New(env, TypeInt8)),
-    StaticValue("_TYPE_INT16", Napi::Number::New(env, TypeInt16)),
-    StaticValue("_TYPE_INT32", Napi::Number::New(env, TypeInt32)),
-    StaticValue("_TYPE_INT64", Napi::Number::New(env, TypeInt64)),
-    StaticValue("_TYPE_REAL32", Napi::Number::New(env, TypeReal32)),
-    StaticValue("_TYPE_REAL64", Napi::Number::New(env, TypeReal64)),
-    StaticValue("_TYPE_BOOL", Napi::Number::New(env, TypeBool)),
-    StaticValue("_TYPE_STRING", Napi::Number::New(env, TypeString)),
     InstanceMethod("isValid", &MemoryAdapter::isValid),
     InstanceMethod("getProcess", &MemoryAdapter::getProcess),
     InstanceMethod("getStats", &MemoryAdapter::getStats),
@@ -48,8 +40,24 @@ Napi::Function MemoryAdapter::Init(Napi::Env env) {
     InstanceMethod("getCacheSize", &MemoryAdapter::getCacheSize),
     InstanceMethod("readData", &MemoryAdapter::readData),
     InstanceMethod("writeData", &MemoryAdapter::writeData),
-    InstanceMethod("_readType", &MemoryAdapter::readType),
-    InstanceMethod("_writeType", &MemoryAdapter::writeType),
+    InstanceMethod("readInt8", &MemoryAdapter::readInt8),
+    InstanceMethod("readInt16", &MemoryAdapter::readInt16),
+    InstanceMethod("readInt32", &MemoryAdapter::readInt32),
+    InstanceMethod("readInt64", &MemoryAdapter::readInt64),
+    InstanceMethod("readReal32", &MemoryAdapter::readReal32),
+    InstanceMethod("readReal64", &MemoryAdapter::readReal64),
+    InstanceMethod("readPtr", &MemoryAdapter::readPtr),
+    InstanceMethod("readBool", &MemoryAdapter::readBool),
+    InstanceMethod("readString", &MemoryAdapter::readString),
+    InstanceMethod("writeInt8", &MemoryAdapter::writeInt8),
+    InstanceMethod("writeInt16", &MemoryAdapter::writeInt16),
+    InstanceMethod("writeInt32", &MemoryAdapter::writeInt32),
+    InstanceMethod("writeInt64", &MemoryAdapter::writeInt64),
+    InstanceMethod("writeReal32", &MemoryAdapter::writeReal32),
+    InstanceMethod("writeReal64", &MemoryAdapter::writeReal64),
+    InstanceMethod("writePtr", &MemoryAdapter::writePtr),
+    InstanceMethod("writeBool", &MemoryAdapter::writeBool),
+    InstanceMethod("writeString", &MemoryAdapter::writeString),
   });
 }
 
@@ -199,15 +207,14 @@ Napi::Value MemoryAdapter::writeData(const Napi::CallbackInfo& info) {
   ));
 }
 
-Napi::Value MemoryAdapter::readType(const Napi::CallbackInfo& info) {
+Napi::Value MemoryAdapter::readTypeImpl(const Napi::CallbackInfo& info, int type_, Robot::uint32 length, int countIdx) {
   auto address = (Robot::uintptr) info[0].As<Napi::Number>().DoubleValue();
-  auto type    = (DataType) info[1].As<Napi::Number>().Uint32Value();
-  auto length  = (Robot::uint32) info[2].As<Napi::Number>().Uint32Value();
+  auto type    = (DataType) type_;
   auto count   = (Robot::uint32) 1;
   auto stride  = (Robot::uint32) 0;
 
-  if(!info[3].IsUndefined()) count  = info[3].As<Napi::Number>().Uint32Value();
-  if(!info[4].IsUndefined()) stride = info[4].As<Napi::Number>().Uint32Value();
+  if(!info[countIdx].IsUndefined())   count  = info[countIdx].As<Napi::Number>().Uint32Value();
+  if(!info[countIdx+1].IsUndefined()) stride = info[countIdx+1].As<Napi::Number>().Uint32Value();
 
   if(count == 0 || length == 0) return env.Null();
 
@@ -263,15 +270,30 @@ Napi::Value MemoryAdapter::readType(const Napi::CallbackInfo& info) {
   return res;
 }
 
-Napi::Value MemoryAdapter::writeType(const Napi::CallbackInfo& info) {
+Napi::Value MemoryAdapter::readInt8(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeInt8, 1, 1); }
+Napi::Value MemoryAdapter::readInt16(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeInt16, 2, 1); }
+Napi::Value MemoryAdapter::readInt32(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeInt32, 4, 1); }
+Napi::Value MemoryAdapter::readInt64(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeInt64, 8, 1); }
+Napi::Value MemoryAdapter::readReal32(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeReal32, 4, 1); }
+Napi::Value MemoryAdapter::readReal64(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeReal64, 8, 1); }
+Napi::Value MemoryAdapter::readBool(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeBool, 1, 1); }
+Napi::Value MemoryAdapter::readString(const Napi::CallbackInfo& info) {
+  return readTypeImpl(info, TypeString, info[1].As<Napi::Number>().Uint32Value(), 2);
+}
+Napi::Value MemoryAdapter::readPtr(const Napi::CallbackInfo& info) {
+  return adaptee.GetPtrSize() == 4
+    ? readTypeImpl(info, TypeInt32, 4, 1)
+    : readTypeImpl(info, TypeInt64, 8, 1);
+}
+
+Napi::Value MemoryAdapter::writeTypeImpl(const Napi::CallbackInfo& info, int type_, Robot::uint32 length) {
   auto address = (Robot::uintptr) info[0].As<Napi::Number>().DoubleValue();
-  auto type    = (DataType) info[2].As<Napi::Number>().Uint32Value();
-  auto length  = (Robot::uint32) info[3].As<Napi::Number>().Uint32Value();
+  auto type    = (DataType) type_;
 
   if(type == TypeString) {
     if(!info[1].IsString()) throw Napi::TypeError::New(env, "Invalid arguments");
     auto str = info[1].As<Napi::String>().Utf8Value();
-    if(info[3].IsUndefined()) length = str.length() + 1;
+    if(length == 0) length = str.length() + 1;
     if(length == 0) return Napi::Boolean::New(env, true);
     if(length > (Robot::uint32)str.length() + 1)
       throw Napi::RangeError::New(env, "Length is too large");
@@ -290,6 +312,22 @@ Napi::Value MemoryAdapter::writeType(const Napi::CallbackInfo& info) {
     }
     return Napi::Boolean::New(env, adaptee.WriteData(address, &data, length) == length);
   }
+}
+
+Napi::Value MemoryAdapter::writeInt8(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeInt8, 1); }
+Napi::Value MemoryAdapter::writeInt16(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeInt16, 2); }
+Napi::Value MemoryAdapter::writeInt32(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeInt32, 4); }
+Napi::Value MemoryAdapter::writeInt64(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeInt64, 8); }
+Napi::Value MemoryAdapter::writeReal32(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeReal32, 4); }
+Napi::Value MemoryAdapter::writeReal64(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeReal64, 8); }
+Napi::Value MemoryAdapter::writeBool(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeBool, 1); }
+Napi::Value MemoryAdapter::writeString(const Napi::CallbackInfo& info) {
+  return writeTypeImpl(info, TypeString, info[2].IsUndefined() ? 0 : info[2].As<Napi::Number>().Uint32Value());
+}
+Napi::Value MemoryAdapter::writePtr(const Napi::CallbackInfo& info) {
+  return adaptee.GetPtrSize() == 4
+    ? writeTypeImpl(info, TypeInt32, 4)
+    : writeTypeImpl(info, TypeInt64, 8);
 }
 
 Napi::Function MemoryAdapter::RegionAdapter::Init(Napi::Env env) {
