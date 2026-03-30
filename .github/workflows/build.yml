@@ -50,6 +50,7 @@ jobs:
           echo NVM_DIR=$HOME/.nvm >>$GITHUB_ENV
           curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
           echo PYTHON=/usr/local/bin/python >>$GITHUB_ENV
+          softwareupdate --install-rosetta --agree-to-license || true
       - if: ${{ runner.os == 'Windows' }}
         run: |
           choco install nvm
