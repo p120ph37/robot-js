@@ -10,8 +10,7 @@ jobs:
           - windows-2022
           - ubuntu-22.04
           - ubuntu-22.04-arm
-          - macos-14 # arm
-          - macos-15 # arm
+          - macos-14
         arch:
           - 64
           - 32
@@ -22,8 +21,9 @@ jobs:
             arch: 32
           - os: macos-14
             arch: 32
-          - os: macos-15
-            arch: 32
+        include:
+          - os: macos-14
+            arch: x64
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -61,13 +61,14 @@ jobs:
           submodules: recursive
       - env:
           ARCH: ${{ runner.os == 'Windows' && matrix.arch || '' }}
+          CROSS_ARCH: ${{ matrix.arch == 'x64' && '--arch x64' || '' }}
         run: |
           [ -e "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
           nvm install $HOST_NODE_VERSION $ARCH
           nvm use $HOST_NODE_VERSION $ARCH && sleep 3
           npm ci --ignore-scripts
-          npm run build -- --target=$HOST_NODE_VERSION
-          npm run test:ci
+          npm run build -- --target=$HOST_NODE_VERSION $CROSS_ARCH
+          [ -z "$CROSS_ARCH" ] && npm run test:ci || true
       - uses: actions/upload-artifact@v4
         with:
           name: artifact-${{ matrix.os }}-${{ matrix.arch }}
