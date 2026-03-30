@@ -70,7 +70,8 @@ jobs:
           npm ci --ignore-scripts
           npm run build -- --target=$HOST_NODE_VERSION $CROSS_ARCH
           if [ -n "$CROSS_ARCH" ]; then
-            arch -x86_64 node test/test.js types
+            curl -sL https://nodejs.org/dist/$HOST_NODE_VERSION/node-$HOST_NODE_VERSION-darwin-x64.tar.gz | tar xz
+            ./node-$HOST_NODE_VERSION-darwin-x64/bin/node test/test.js types
           else
             npm run test:ci
           fi
