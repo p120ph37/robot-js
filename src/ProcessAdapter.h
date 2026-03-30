@@ -25,6 +25,7 @@ class ProcessAdapter :
     static Napi::Value getList(const Napi::CallbackInfo& info);
     static Napi::Value getCurrent(const Napi::CallbackInfo& info);
     static Napi::Value isSys64Bit(const Napi::CallbackInfo& info);
+    static Napi::Value getSegments(const Napi::CallbackInfo& info);
 
     Napi::Value eq(const Napi::CallbackInfo& info);
     Napi::Value ne(const Napi::CallbackInfo& info);

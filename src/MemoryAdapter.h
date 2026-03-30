@@ -45,7 +45,7 @@ class MemoryAdapter :
     Napi::Value writePtr(const Napi::CallbackInfo& info);
     Napi::Value writeBool(const Napi::CallbackInfo& info);
     Napi::Value writeString(const Napi::CallbackInfo& info);
-  
+
     class StatsAdapter :
       public ClassAdapter<StatsAdapter, Robot::Memory::Stats>,
       public ClassAdapter<StatsAdapter, Robot::Memory::Stats>::Eq {
@@ -105,5 +105,9 @@ class MemoryAdapter :
 
         Napi::Value contains(const Napi::CallbackInfo& info);
     };
+
+  private:
+    Napi::Value readTypeImpl(const Napi::CallbackInfo& info, int type, Robot::uint32 length, int countIdx);
+    Napi::Value writeTypeImpl(const Napi::CallbackInfo& info, int type, Robot::uint32 length);
 
 };

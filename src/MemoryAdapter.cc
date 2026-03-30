@@ -2,6 +2,19 @@
 #include "RangeAdapter.h"
 #include "ProcessAdapter.h"
 
+namespace {
+  enum DataType {
+    TypeInt8   = 1,
+    TypeInt16  = 2,
+    TypeInt32  = 3,
+    TypeInt64  = 4,
+    TypeReal32 = 5,
+    TypeReal64 = 6,
+    TypeBool   = 7,
+    TypeString = 8,
+  };
+}
+
 Napi::Function MemoryAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Memory", {
     StaticValue("Stats", MemoryAdapter::StatsAdapter::GetConstructor(env)),
@@ -15,6 +28,10 @@ Napi::Function MemoryAdapter::Init(Napi::Env env) {
     InstanceMethod("getRegion", &MemoryAdapter::getRegion),
     InstanceMethod("getRegions", &MemoryAdapter::getRegions),
     InstanceMethod("setAccess", &MemoryAdapter::setAccess),
+    InstanceMethod("getPtrSize", &MemoryAdapter::getPtrSize),
+    InstanceMethod("getMinAddress", &MemoryAdapter::getMinAddress),
+    InstanceMethod("getMaxAddress", &MemoryAdapter::getMaxAddress),
+    InstanceMethod("getPageSize", &MemoryAdapter::getPageSize),
     InstanceMethod("find", &MemoryAdapter::find),
     InstanceMethod("createCache", &MemoryAdapter::createCache),
     InstanceMethod("clearCache", &MemoryAdapter::clearCache),
@@ -23,6 +40,24 @@ Napi::Function MemoryAdapter::Init(Napi::Env env) {
     InstanceMethod("getCacheSize", &MemoryAdapter::getCacheSize),
     InstanceMethod("readData", &MemoryAdapter::readData),
     InstanceMethod("writeData", &MemoryAdapter::writeData),
+    InstanceMethod("readInt8", &MemoryAdapter::readInt8),
+    InstanceMethod("readInt16", &MemoryAdapter::readInt16),
+    InstanceMethod("readInt32", &MemoryAdapter::readInt32),
+    InstanceMethod("readInt64", &MemoryAdapter::readInt64),
+    InstanceMethod("readReal32", &MemoryAdapter::readReal32),
+    InstanceMethod("readReal64", &MemoryAdapter::readReal64),
+    InstanceMethod("readPtr", &MemoryAdapter::readPtr),
+    InstanceMethod("readBool", &MemoryAdapter::readBool),
+    InstanceMethod("readString", &MemoryAdapter::readString),
+    InstanceMethod("writeInt8", &MemoryAdapter::writeInt8),
+    InstanceMethod("writeInt16", &MemoryAdapter::writeInt16),
+    InstanceMethod("writeInt32", &MemoryAdapter::writeInt32),
+    InstanceMethod("writeInt64", &MemoryAdapter::writeInt64),
+    InstanceMethod("writeReal32", &MemoryAdapter::writeReal32),
+    InstanceMethod("writeReal64", &MemoryAdapter::writeReal64),
+    InstanceMethod("writePtr", &MemoryAdapter::writePtr),
+    InstanceMethod("writeBool", &MemoryAdapter::writeBool),
+    InstanceMethod("writeString", &MemoryAdapter::writeString),
   });
 }
 
@@ -143,7 +178,7 @@ Napi::Value MemoryAdapter::readData(const Napi::CallbackInfo& info) {
     throw Napi::TypeError::New(env, "Invalid arguments");
   }
   auto buffer = info[1].As<Napi::Buffer<uint8_t>>();
-  uint64_t length = info[0].As<Napi::Number>().Int64Value();
+  uint64_t length = info[2].IsUndefined() ? buffer.Length() : info[2].As<Napi::Number>().Int64Value();
   if(buffer.Length() < length) {
     throw Napi::RangeError::New(env, "Buffer is too small");
   }
@@ -156,79 +191,143 @@ Napi::Value MemoryAdapter::readData(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value MemoryAdapter::writeData(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
+  if(!info[1].IsBuffer()) {
+    throw Napi::TypeError::New(env, "Invalid arguments");
+  }
+  auto buffer = info[1].As<Napi::Buffer<uint8_t>>();
+  uint64_t length = info[2].IsUndefined() ? buffer.Length() : info[2].As<Napi::Number>().Int64Value();
+  if(buffer.Length() < length) {
+    throw Napi::RangeError::New(env, "Buffer is too small");
+  }
+  return Napi::Number::New(env, adaptee.WriteData(
+    info[0].As<Napi::Number>().Int64Value(),
+    buffer.Data(),
+    length,
+    info[3].IsUndefined() ? Robot::Memory::Default : (Robot::Memory::Flags)(info[3].As<Napi::Number>().Int32Value())
+  ));
 }
 
-Napi::Value MemoryAdapter::readInt8(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
+Napi::Value MemoryAdapter::readTypeImpl(const Napi::CallbackInfo& info, int type_, Robot::uint32 length, int countIdx) {
+  auto address = (Robot::uintptr) info[0].As<Napi::Number>().DoubleValue();
+  auto type    = (DataType) type_;
+  auto count   = (Robot::uint32) 1;
+  auto stride  = (Robot::uint32) 0;
+
+  if(!info[countIdx].IsUndefined())   count  = info[countIdx].As<Napi::Number>().Uint32Value();
+  if(!info[countIdx+1].IsUndefined()) stride = info[countIdx+1].As<Napi::Number>().Uint32Value();
+
+  if(count == 0 || length == 0) return env.Null();
+
+  if(count == 1) {
+    if(type == TypeString) {
+      auto data = new char[length];
+      if(adaptee.ReadData(address, data, length) != length)
+        { delete[] data; return env.Null(); }
+      auto res = Napi::String::New(env, std::string(data, length).data());
+      delete[] data; return res;
+    } else {
+      Robot::int64 data = 0;
+      if(adaptee.ReadData(address, &data, length) != length)
+        return env.Null();
+      switch(type) {
+        case TypeInt8  : return Napi::Number::New(env,  (int32_t) *(int8_t  *) &data);
+        case TypeInt16 : return Napi::Number::New(env,  (int32_t) *(int16_t *) &data);
+        case TypeInt32 : return Napi::Number::New(env,  (int32_t) *(int32_t *) &data);
+        case TypeInt64 : return Napi::Number::New(env,  (double)  *(Robot::int64 *) &data);
+        case TypeReal32: return Napi::Number::New(env,  (double)  *(float   *) &data);
+        case TypeReal64: return Napi::Number::New(env,  (double)  *(double  *) &data);
+        case TypeBool  : return Napi::Boolean::New(env, (bool)    *(bool    *) &data);
+        default: return env.Null();
+      }
+    }
+  }
+
+  if(stride == 0) stride = length;
+  if(stride < length) throw Napi::RangeError::New(env, "Stride is too small");
+
+  auto size   = (Robot::uintptr)count * stride + length - stride;
+  auto data   = new char[size];
+  auto offset = data;
+
+  if(adaptee.ReadData(address, data, size) != size)
+    { delete[] data; return env.Null(); }
+
+  auto res = Napi::Array::New(env, count);
+  for(Robot::uint32 i = 0; i < count; ++i, offset += stride) {
+    switch(type) {
+      case TypeInt8  : res[i] = Napi::Number::New(env,  (int32_t) *(int8_t  *) offset); continue;
+      case TypeInt16 : res[i] = Napi::Number::New(env,  (int32_t) *(int16_t *) offset); continue;
+      case TypeInt32 : res[i] = Napi::Number::New(env,  (int32_t) *(int32_t *) offset); continue;
+      case TypeInt64 : res[i] = Napi::Number::New(env,  (double)  *(Robot::int64 *) offset); continue;
+      case TypeReal32: res[i] = Napi::Number::New(env,  (double)  *(float   *) offset); continue;
+      case TypeReal64: res[i] = Napi::Number::New(env,  (double)  *(double  *) offset); continue;
+      case TypeBool  : res[i] = Napi::Boolean::New(env, (bool)    *(bool    *) offset); continue;
+      case TypeString: res[i] = Napi::String::New(env, std::string(offset, length).data()); continue;
+      default: break;
+    }
+  }
+  delete[] data;
+  return res;
 }
 
-Napi::Value MemoryAdapter::readInt16(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::readInt32(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::readInt64(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::readReal32(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::readReal64(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::readPtr(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::readBool(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
+Napi::Value MemoryAdapter::readInt8(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeInt8, 1, 1); }
+Napi::Value MemoryAdapter::readInt16(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeInt16, 2, 1); }
+Napi::Value MemoryAdapter::readInt32(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeInt32, 4, 1); }
+Napi::Value MemoryAdapter::readInt64(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeInt64, 8, 1); }
+Napi::Value MemoryAdapter::readReal32(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeReal32, 4, 1); }
+Napi::Value MemoryAdapter::readReal64(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeReal64, 8, 1); }
+Napi::Value MemoryAdapter::readBool(const Napi::CallbackInfo& info) { return readTypeImpl(info, TypeBool, 1, 1); }
 Napi::Value MemoryAdapter::readString(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
+  return readTypeImpl(info, TypeString, info[1].As<Napi::Number>().Uint32Value(), 2);
+}
+Napi::Value MemoryAdapter::readPtr(const Napi::CallbackInfo& info) {
+  return adaptee.GetPtrSize() == 4
+    ? readTypeImpl(info, TypeInt32, 4, 1)
+    : readTypeImpl(info, TypeInt64, 8, 1);
 }
 
-Napi::Value MemoryAdapter::writeInt8(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
+Napi::Value MemoryAdapter::writeTypeImpl(const Napi::CallbackInfo& info, int type_, Robot::uint32 length) {
+  auto address = (Robot::uintptr) info[0].As<Napi::Number>().DoubleValue();
+  auto type    = (DataType) type_;
+
+  if(type == TypeString) {
+    if(!info[1].IsString()) throw Napi::TypeError::New(env, "Invalid arguments");
+    auto str = info[1].As<Napi::String>().Utf8Value();
+    if(length == 0) length = str.length() + 1;
+    if(length == 0) return Napi::Boolean::New(env, true);
+    if(length > (Robot::uint32)str.length() + 1)
+      throw Napi::RangeError::New(env, "Length is too large");
+    return Napi::Boolean::New(env, adaptee.WriteData(address, str.c_str(), length) == length);
+  } else {
+    Robot::int64 data = 0;
+    switch(type) {
+      case TypeInt8  : *(int8_t  *) &data = (int8_t)  info[1].As<Napi::Number>().Int32Value(); break;
+      case TypeInt16 : *(int16_t *) &data = (int16_t) info[1].As<Napi::Number>().Int32Value(); break;
+      case TypeInt32 : *(int32_t *) &data = (int32_t) info[1].As<Napi::Number>().Int32Value(); break;
+      case TypeInt64 : *(Robot::int64 *) &data = (Robot::int64) info[1].As<Napi::Number>().DoubleValue(); break;
+      case TypeReal32: *(float   *) &data = (float)   info[1].As<Napi::Number>().DoubleValue(); break;
+      case TypeReal64: *(double  *) &data = (double)  info[1].As<Napi::Number>().DoubleValue(); break;
+      case TypeBool  : *(bool    *) &data = (bool)    info[1].As<Napi::Boolean>().Value(); break;
+      default: return Napi::Boolean::New(env, false);
+    }
+    return Napi::Boolean::New(env, adaptee.WriteData(address, &data, length) == length);
+  }
 }
 
-Napi::Value MemoryAdapter::writeInt16(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::writeInt32(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::writeInt64(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::writeReal32(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::writeReal64(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::writePtr(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
-Napi::Value MemoryAdapter::writeBool(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
-}
-
+Napi::Value MemoryAdapter::writeInt8(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeInt8, 1); }
+Napi::Value MemoryAdapter::writeInt16(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeInt16, 2); }
+Napi::Value MemoryAdapter::writeInt32(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeInt32, 4); }
+Napi::Value MemoryAdapter::writeInt64(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeInt64, 8); }
+Napi::Value MemoryAdapter::writeReal32(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeReal32, 4); }
+Napi::Value MemoryAdapter::writeReal64(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeReal64, 8); }
+Napi::Value MemoryAdapter::writeBool(const Napi::CallbackInfo& info) { return writeTypeImpl(info, TypeBool, 1); }
 Napi::Value MemoryAdapter::writeString(const Napi::CallbackInfo& info) {
-  return env.Null(); // FIXME
+  return writeTypeImpl(info, TypeString, info[2].IsUndefined() ? 0 : info[2].As<Napi::Number>().Uint32Value());
+}
+Napi::Value MemoryAdapter::writePtr(const Napi::CallbackInfo& info) {
+  return adaptee.GetPtrSize() == 4
+    ? writeTypeImpl(info, TypeInt32, 4)
+    : writeTypeImpl(info, TypeInt64, 8);
 }
 
 Napi::Function MemoryAdapter::RegionAdapter::Init(Napi::Env env) {
@@ -242,7 +341,7 @@ Napi::Function MemoryAdapter::RegionAdapter::Init(Napi::Env env) {
     InstanceAccessor("writable", &MemoryAdapter::RegionAdapter::writable, &MemoryAdapter::RegionAdapter::writable),
     InstanceAccessor("executable", &MemoryAdapter::RegionAdapter::executable, &MemoryAdapter::RegionAdapter::executable),
     InstanceAccessor("access", &MemoryAdapter::RegionAdapter::access, &MemoryAdapter::RegionAdapter::access),
-    InstanceAccessor("private_", &MemoryAdapter::RegionAdapter::private_, &MemoryAdapter::RegionAdapter::private_),
+    InstanceAccessor("private", &MemoryAdapter::RegionAdapter::private_, &MemoryAdapter::RegionAdapter::private_),
     InstanceAccessor("guarded", &MemoryAdapter::RegionAdapter::guarded, &MemoryAdapter::RegionAdapter::guarded),
     InstanceMethod("contains", &MemoryAdapter::RegionAdapter::contains),
     InstanceMethod("lt", &MemoryAdapter::RegionAdapter::lt),
@@ -274,24 +373,24 @@ void MemoryAdapter::RegionAdapter::bound(const Napi::CallbackInfo& info, const N
 }
 
 Napi::Value MemoryAdapter::RegionAdapter::start(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(env, adaptee.Start);
+  return Napi::Number::New(env, adaptee.Start);
 }
 void MemoryAdapter::RegionAdapter::start(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.Start = value.ToBoolean();
+  adaptee.Start = value.As<Napi::Number>().Int64Value();
 }
 
 Napi::Value MemoryAdapter::RegionAdapter::stop(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(env, adaptee.Stop);
+  return Napi::Number::New(env, adaptee.Stop);
 }
 void MemoryAdapter::RegionAdapter::stop(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.Stop = value.ToBoolean();
+  adaptee.Stop = value.As<Napi::Number>().Int64Value();
 }
 
 Napi::Value MemoryAdapter::RegionAdapter::size(const Napi::CallbackInfo& info) {
-  return Napi::Boolean::New(env, adaptee.Size);
+  return Napi::Number::New(env, adaptee.Size);
 }
 void MemoryAdapter::RegionAdapter::size(const Napi::CallbackInfo& info, const Napi::Value& value) {
-  adaptee.Size = value.ToBoolean();
+  adaptee.Size = value.As<Napi::Number>().Int64Value();
 }
 
 Napi::Value MemoryAdapter::RegionAdapter::readable(const Napi::CallbackInfo& info) {

@@ -20,6 +20,7 @@ Napi::Function ProcessAdapter::Init(Napi::Env env) {
     StaticMethod("getList", &ProcessAdapter::getList),
     StaticMethod("getCurrent", &ProcessAdapter::getCurrent),
     StaticMethod("isSys64Bit", &ProcessAdapter::isSys64Bit),
+    StaticMethod("_getSegments", &ProcessAdapter::getSegments),
     InstanceMethod("eq", &ProcessAdapter::eq),
     InstanceMethod("ne", &ProcessAdapter::ne),
   });
@@ -112,6 +113,28 @@ Napi::Value ProcessAdapter::getCurrent(const Napi::CallbackInfo& info) {
 
 Napi::Value ProcessAdapter::isSys64Bit(const Napi::CallbackInfo& info) {
   return Napi::Boolean::New(info.Env(), Robot::Process::IsSys64Bit());
+}
+
+Napi::Value ProcessAdapter::getSegments(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
+  if(!IsInstance(info[0])) throw Napi::TypeError::New(env, "Invalid arguments");
+  auto proc = Unwrap(info[0])->adaptee;
+
+  // Synthesize a module to get segments
+  Robot::Module module(proc, "", "",
+    (Robot::uintptr) info[1].As<Napi::Number>().DoubleValue(), 0);
+  auto list = module.GetSegments();
+
+  auto arr = Napi::Array::New(env, list.size());
+  for(size_t i = 0; i < list.size(); ++i) {
+    auto obj = Napi::Object::New(env);
+    obj["valid"] = Napi::Boolean::New(env, list[i].Valid);
+    obj["base"]  = Napi::Number::New(env, (double) list[i].Base);
+    obj["size"]  = Napi::Number::New(env, (double) list[i].Size);
+    obj["name"]  = Napi::String::New(env, list[i].Name);
+    arr[i] = obj;
+  }
+  return arr;
 }
 
 Napi::Value ProcessAdapter::eq(const Napi::CallbackInfo& info) {

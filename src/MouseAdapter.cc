@@ -4,6 +4,7 @@
 
 Napi::Function MouseAdapter::Init(Napi::Env env) {
   return DefineClass(env, "Mouse", {
+    InstanceAccessor("autoDelay", &MouseAdapter::autoDelay, &MouseAdapter::autoDelay),
     InstanceMethod("click", &MouseAdapter::click),
     InstanceMethod("press", &MouseAdapter::press),
     InstanceMethod("release", &MouseAdapter::release),
