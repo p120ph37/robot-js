@@ -26,6 +26,7 @@ jobs:
           - os: macos-14
             arch: x64
     runs-on: ${{ matrix.os }}
+    container: ${{ contains(matrix.os, 'ubuntu') && 'debian:bullseye' || '' }}
     defaults:
       run:
         shell: bash
@@ -44,8 +45,9 @@ jobs:
           key: nvm-windows
       - if: ${{ runner.os == 'Linux' }}
         run: |
+          apt-get update && apt-get install -y python3 make g++ git libxinerama-dev libxtst-dev curl
           echo NVM_DIR=$HOME/.nvm >>$GITHUB_ENV
-          sudo apt-get install libxinerama-dev libxtst-dev
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
       - if: ${{ runner.os == 'macOS' }}
         run: |
           echo NVM_DIR=$HOME/.nvm >>$GITHUB_ENV
